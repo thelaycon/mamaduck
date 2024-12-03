@@ -1,0 +1,272 @@
+/* General Reset and Basic Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fc;
+    color: #4e73df;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #4e73df;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar .logo a {
+    color: #fff;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.navbar .nav-links a {
+    color: #fff;
+    margin: 0 15px;
+    font-size: 16px;
+}
+
+/* Container */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+h2, h3 {
+    font-weight: 600;
+    color: #1cc88a;
+}
+
+p {
+    font-size: 16px;
+    color: #333;
+}
+
+/* Form Styles */
+form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    display: block;
+    margin-bottom: 8px;
+}
+
+select, input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    margin-top: 5px;
+}
+
+button[type="submit"] {
+    background-color: #1cc88a;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 5px;
+    border: none;
+    font-size: 16px;
+    width: 100%;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #17a067;
+}
+
+/* Card Layout */
+.card-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    margin: 30px 0;
+}
+
+.card {
+    background-color: white;
+    padding: 20px;
+    width: 30%;
+    text-align: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card a {
+    display: inline-block;
+    background-color: #1cc88a;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-top: 15px;
+}
+
+/* Analytics Layout */
+.analytics-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.analytics-item {
+    width: 48%;
+}
+
+h4 {
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* List Styles */
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+li {
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.view-btn, .btn-small {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 14px;
+}
+
+.view-btn {
+    background-color: #1cc88a;
+    color: white;
+}
+
+.btn-small {
+    background-color: #4e73df;
+    color: white;
+}
+
+/* Footer */
+footer {
+    background-color: #4e73df;
+    padding: 10px;
+    color: white;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card-container {
+        flex-direction: column;
+    }
+    .analytics-container {
+        flex-direction: column;
+    }
+}
+
+/* Databases Section */
+.db-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.db-item {
+    background-color: #fff;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.db-info {
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.view-btn, .btn-small {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 14px;
+}
+
+.view-btn {
+    background-color: #1cc88a;
+    color: white;
+}
+
+.btn-small {
+    background-color: #4e73df;
+    color: white;
+}
+
+/* Loaded Data Section */
+.data-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.data-item {
+    background-color: #fff;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Add space below the Databases Section */
+.section {
+    margin-bottom: 30px;  /* Adjust the value as needed */
+}

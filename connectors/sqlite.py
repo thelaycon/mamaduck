@@ -46,14 +46,19 @@ class SQLiteToDuckDB:
             print(f"{Fore.RED}Failed to list tables in SQLite: {e}")
             raise
 
-    def migrate_table(self, sqlite_path, sqlite_table, duckdb_table):
+    def migrate_table(self, sqlite_path, sqlite_table, duckdb_table, schema):
         """Migrate a table from SQLite to DuckDB."""
         try:
-            print(f"{Fore.BLUE}Migrating table '{sqlite_table}' from SQLite to DuckDB...")
-            query = f"""
-            CREATE TABLE {duckdb_table} AS 
-            SELECT * FROM sqlite_scan('{sqlite_path}', '{sqlite_table}');
-            """
+            if schema:
+                query = f"""
+                CREATE TABLE {schema}.{duckdb_table} AS 
+                SELECT * FROM sqlite_scan('{sqlite_path}', '{sqlite_table}');
+                """
+            else:
+                query = f"""
+                CREATE TABLE {duckdb_table} AS 
+                SELECT * FROM sqlite_scan('{sqlite_path}', '{sqlite_table}');
+                """
             self.duckdb_conn.execute(query)
             print(f"{Fore.GREEN}Table '{sqlite_table}' successfully migrated to DuckDB as '{duckdb_table}'.")
         except Exception as e:
@@ -105,6 +110,35 @@ def main():
     except Exception:
         return
 
+    # Prompt user to choose or create schema
+    print(f"{Fore.CYAN}Would you like to use an existing schema or create a new one? (existing/new): ", end="")
+    schema_choice = input().strip().lower()
+
+    if schema_choice == 'new':
+        print(f"{Fore.CYAN}Enter the name of the new schema: ", end="")
+        schema_name = input().strip()
+        try:
+            db_tool.duckdb_conn.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name};")
+            print(f"{Fore.GREEN}Schema '{schema_name}' created successfully.")
+        except Exception as e:
+            print(f"{Fore.RED}Failed to create schema: {e}")
+            return
+    elif schema_choice == 'existing':
+        # List schemas in DuckDB
+        schemas = db_tool.duckdb_conn.execute("SELECT schema_name FROM information_schema.schemata;").fetchall()
+        schemas = [schema[0] for schema in schemas]
+        print(f"{Fore.GREEN}Existing schemas in DuckDB:")
+        for schema in schemas:
+            print(f"{Fore.YELLOW}- {schema}")
+        print(f"{Fore.CYAN}Enter the name of the schema to use: ", end="")
+        schema_name = input().strip()
+        if schema_name not in schemas:
+            print(f"{Fore.RED}Schema '{schema_name}' does not exist.")
+            return
+    else:
+        print(f"{Fore.RED}Invalid choice. Please choose 'existing' or 'new'.")
+        return
+
     # Prompt user for action
     print(f"{Fore.CYAN}Would you like to migrate a specific table or all tables? (single/all): ", end="")
     action = input().strip().lower()
@@ -120,7 +154,7 @@ def main():
         print(f"{Fore.CYAN}Enter the name of the table to create in DuckDB: ", end="")
         duckdb_table = input().strip()
         try:
-            db_tool.migrate_table(sqlite_path, sqlite_table, duckdb_table)
+            db_tool.migrate_table(sqlite_path, sqlite_table, duckdb_table, schema_name)
         except Exception:
             return
 
@@ -140,7 +174,7 @@ def main():
         for sqlite_table in tables:
             duckdb_table = sqlite_table  # Use the same name for simplicity
             try:
-                db_tool.migrate_table(sqlite_path, sqlite_table, duckdb_table)
+                db_tool.migrate_table(sqlite_path, sqlite_table, duckdb_table, schema_name)
             except Exception:
                 continue
 

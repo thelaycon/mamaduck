@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Database - MamaDuck</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="navbar">
+        <div><a href="/">MamaDuck</a></div>
+        <div>
+            <a href="#">Documentation</a>
+            <a href="#">FAQ</a>
+            <a href="#">Settings</a>
+        </div>
+    </div>
+    <div class="container">
+        <h2>Create a New Database</h2>
+        <form action="/create-database" method="post">
+            <label for="db_name" class="form-label">Database Name:</label>
+            <input type="text" id="db_name" name="db_name" placeholder="Enter database name" required>
+            <br><br>
+            <button type="submit" class="btn">Create Database</button>
+        </form>
+    </div>
+    <footer>
+        &copy; 2024 MamaDuck. All rights reserved.
+    </footer>
+</body>
+</html>
