@@ -1,26 +1,46 @@
 [tool.poetry]
 name = "mamaduck"
 version = "0.1.0"
-description = ""
+description = "A local data warehouse utility for managing and migrating data across DuckDB, SQLite, and CSV."
 authors = ["thelaycon <tobitobitobiwhy@gmail.com>"]
+license = "MIT"
+homepage = "https://github.com/thelaycon/mamaduck"
+repository = "https://github.com/thelaycon/mamaduck"
 readme = "README.md"
+keywords = ["data warehouse", "ETL", "DuckDB", "SQLite", "CSV", "data management"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Database",
+    "Topic :: Software Development :: Libraries",
+    "Operating System :: OS Independent",
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-requests = "^2.32.3"
-dbt-core = "^1.8.9"
 duckdb = "^1.1.3"
-tornado = "^6.4.2"
+sqlite-utils = "^3.35.1"
 colorama = "^0.4.6"
-pandas = "^2.2.3"
+tornado = "^6.4.2"
+dbt-core = "^1.8.9"
 pytest = "^8.3.4"
+pytz = "^2023.3"
+dateutil = "^2.8.2"
 
+[tool.poetry.dev-dependencies]
+pytest = "^8.3.4"
+pytest-cov = "^4.1.0"
+black = "^23.9.1"
+flake8 = "^6.1.0"
+isort = "^5.12.0"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
 
 [tool.pytest.ini_options]
 python_files = "test_*.py"
 python_functions = "test_*"
+addopts = "--strict-markers --disable-warnings --tb=short --cov=mamaduck"
