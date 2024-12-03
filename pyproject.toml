@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "mamaduck"
+version = "0.1.0"
+description = ""
+authors = ["thelaycon <tobitobitobiwhy@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.32.3"
+dbt-core = "^1.8.9"
+duckdb = "^1.1.3"
+tornado = "^6.4.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
