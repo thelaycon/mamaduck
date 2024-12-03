@@ -10,7 +10,7 @@ class CSVToDuckDB:
         self.connection = None
         self.db_path = db_path
 
-    def connect_to_db(self):
+    def connect_to_duckdb(self):
         """Connect to either an in-memory or file-based DuckDB database."""
         if self.db_path:
             self.connection = duckdb.connect(database=self.db_path)
@@ -70,7 +70,7 @@ def main():
 
     # Initialize and connect to DuckDB
     db_tool = CSVToDuckDB(db_path)
-    db_tool.connect_to_db()
+    db_tool.connect_to_duckdb()
 
     # Prompt for CSV file name
     print(f"{Fore.CYAN}Enter the CSV file name (with path if needed): ", end="")
