@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - MamaDuck</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="navbar">
+        <div><a href="/">MamaDuck</a></div>
+        <div>
+            <a href="#">Documentation</a>
+            <a href="#">FAQ</a>
+            <a href="#">Settings</a>
+        </div>
+    </div>
+    <div class="container">
+        <h2>Welcome to MamaDuck</h2>
+        <p>The ultimate tool for database management. Create, load, and export databases with ease.</p>
+
+        <!-- Analytics Section with Graphs -->
+        <div class="section">
+            <h3>Analytics</h3>
+            <div class="analytics-container">
+                <div>
+                    <h4>Number of Databases</h4>
+                    <canvas id="databasesChart"></canvas>
+                </div>
+                <div>
+                    <h4>Number of Loaded Data Files</h4>
+                    <canvas id="dataFilesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Your Databases</h3>
+            <div class="db-list">
+                <!-- Using dummy database data -->
+                <ul>
+                    <li>
+                        database_1.db
+                        <form action="/export-database" method="post" style="display: inline;">
+                            <input type="hidden" name="db_name" value="database_1.db">
+                            <button type="submit" class="btn-small">Export</button>
+                        </form>
+                    </li>
+                    <li>
+                        database_2.db
+                        <form action="/export-database" method="post" style="display: inline;">
+                            <input type="hidden" name="db_name" value="database_2.db">
+                            <button type="submit" class="btn-small">Export</button>
+                        </form>
+                    </li>
+                    <li>
+                        database_3.db
+                        <form action="/export-database" method="post" style="display: inline;">
+                            <input type="hidden" name="db_name" value="database_3.db">
+                            <button type="submit" class="btn-small">Export</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Loaded Data</h3>
+            <div class="data-list">
+                <!-- Using dummy data files -->
+                <ul>
+                    <li>data_file_1.csv</li>
+                    <li>data_file_2.csv</li>
+                    <li>data_file_3.db</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card-container">
+            <div class="card">
+                <h3>Create Database</h3>
+                <a href="/create-database">Get Started</a>
+            </div>
+            <div class="card">
+                <h3>Load Data</h3>
+                <a href="/load-data">Connect Now</a>
+            </div>
+            <div class="card">
+                <h3>Export Database</h3>
+                <a href="/export-database">Export</a>
+            </div>
+        </div>
+    </div>
+    <footer>
+        &copy; 2024 MamaDuck. All rights reserved.
+    </footer>
+
+    <script>
+        // Dummy data for testing
+        const numDatabases = 3; // Simulating 3 databases
+        const numDataFiles = 3; // Simulating 3 loaded data files
+
+        // Chart for Number of Databases
+        const ctx1 = document.getElementById('databasesChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['Databases'],
+                datasets: [{
+                    label: 'Number of Databases',
+                    data: [numDatabases],
+                    backgroundColor: '#4e73df',
+                    borderColor: '#4e73df',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Chart for Number of Loaded Data Files
+        const ctx2 = document.getElementById('dataFilesChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['Loaded Data'],
+                datasets: [{
+                    label: 'Number of Loaded Data Files',
+                    data: [numDataFiles],
+                    backgroundColor: '#1cc88a',
+                    borderColor: '#1cc88a',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
