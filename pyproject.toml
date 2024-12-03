@@ -2,7 +2,7 @@
 name = "mamaduck"
 version = "0.1.0"
 description = "A local data warehouse utility for managing and migrating data across DuckDB, SQLite, and CSV."
-authors = ["thelaycon <tobitobitobiwhy@gmail.com>"]
+authors = ["balogun <tobitobitobiwhy@gmail.com>"]
 license = "MIT"
 homepage = "https://github.com/thelaycon/mamaduck"
 repository = "https://github.com/thelaycon/mamaduck"
