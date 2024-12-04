@@ -2,51 +2,45 @@ import argparse
 import duckdb
 import os
 from colorama import Fore, Style, init
-
 from mamaduck.database.duckdb import DuckDBManager
 
 # Initialize colorama for colored CLI output
 init(autoreset=True)
 
-class DuckDBToCSV (DuckDBManager):
-
+class DuckDBToCSV(DuckDBManager):
     def export_table_to_csv(self, table_name, output_file, schema=None):
-        """Export the contents of a DuckDB table to a CSV file."""
+        """Export DuckDB table to CSV."""
         try:
             table = f"{schema}.{table_name}" if schema else table_name
-            print(f"{Fore.BLUE}Exporting table '{table}' to file '{output_file}'...")
+            print(f"{Fore.BLUE}Exporting '{table}' to '{output_file}'... 📊")
             self.duckdb_conn.execute(f"COPY {table} TO '{output_file}' WITH (HEADER, DELIMITER ',');")
-            print(f"{Fore.GREEN}Table '{table}' successfully exported to '{output_file}'.")
+            print(f"{Fore.GREEN}Export successful! ✅")
         except Exception as e:
-            print(f"{Fore.RED}Failed to export table to CSV: {e}")
+            print(f"{Fore.RED}Export failed: {e} ❌")
             raise
 
 def interactive_mode():
-    """Run the script in interactive mode."""
-    print(f"{Fore.CYAN}Welcome to the DuckDB to CSV Export Tool!")
+    """Interactive session for DuckDB to CSV export."""
+    print(f"{Fore.CYAN}Welcome to DuckDB to CSV Export Tool! 🌟")
 
-    # Ask user whether to use an in-memory database or a persistent file
-    db_choice = input(f"{Fore.CYAN}Would you like to use an in-memory database or a persistent file? (memory/file): ").strip().lower()
+    # Database choice
+    db_choice = input(f"{Fore.CYAN}Use in-memory or persistent database? (memory/file): ").strip().lower()
     if db_choice == 'file':
-        db_path = input(f"{Fore.CYAN}Enter the DuckDB file name (existing or new, without path): ").strip()
+        db_path = input(f"{Fore.CYAN}Enter DuckDB file name (existing/new): ").strip()
     elif db_choice == 'memory':
-        db_path = None
+        db_path = ":memory:"
     else:
-        print(f"{Fore.RED}Invalid choice. Please choose 'memory' or 'file'.")
+        print(f"{Fore.RED}Invalid choice. Choose 'memory' or 'file'. ⚠️")
         return
 
-    # Initialize and connect to DuckDB
+    # Connect to DuckDB
     db_tool = DuckDBToCSV(db_path)
     db_tool.connect_to_duckdb()
 
-    # Prompt for schema (optional)
-    schema = input(f"{Fore.CYAN}Enter the schema name (leave empty for none): ").strip() or None
-
-    # Prompt for table name
-    table_name = input(f"{Fore.CYAN}Enter the name of the table to export from DuckDB: ").strip()
-
-    # Prompt for output CSV file name
-    output_file = input(f"{Fore.CYAN}Enter the output CSV file name (with path if needed): ").strip()
+    # Schema and table inputs
+    schema = input(f"{Fore.CYAN}Enter schema (optional): ").strip() or None
+    table_name = input(f"{Fore.CYAN}Enter table name to export: ").strip()
+    output_file = input(f"{Fore.CYAN}Enter output CSV file: ").strip()
 
     # Export the table to CSV
     try:
@@ -54,43 +48,45 @@ def interactive_mode():
     except Exception:
         return
 
-    print(f"{Fore.GREEN}Process completed. Goodbye!")
+    print(f"{Fore.GREEN}Export completed. Goodbye! 👋")
 
 def main():
-    # Set up argument parser
-    parser = argparse.ArgumentParser(description="Export DuckDB tables to CSV files.")
-    parser.add_argument('--db', type=str, help="Path to DuckDB database file (leave empty for in-memory).")
-    parser.add_argument('--table', type=str, help="Name of the DuckDB table to export.")
-    parser.add_argument('--schema', type=str, help="Schema of the table (optional).")
+    """Main entry point for DuckDB to CSV export."""
+    parser = argparse.ArgumentParser(description="Export DuckDB tables to CSV.")
+    parser.add_argument('--db', type=str, help="DuckDB database path (use ':memory:' for in-memory).")
+    parser.add_argument('--table', type=str, help="Table name to export.")
+    parser.add_argument('--schema', type=str, help="Optional schema for the table.")
     parser.add_argument('--output', type=str, help="Output CSV file path.")
-    parser.add_argument('--cli', action='store_true', help="Run the script in interactive mode.")
+    parser.add_argument('--cli', action='store_true', help="Run in interactive mode.")
 
     args = parser.parse_args()
 
-    # Run in interactive mode if specified
+    # Interactive mode
     if args.cli:
         interactive_mode()
         return
 
-    # Validate required arguments for non-interactive mode
+    # Non-interactive mode validation
     if not args.table or not args.output:
-        print(f"{Fore.RED}Error: '--table' and '--output' arguments are required in non-interactive mode.")
+        print(f"{Fore.RED}Error: '--table' and '--output' are required. ⚠️")
         return
 
-    # Initialize and connect to DuckDB
-    db_tool = DuckDBToCSV(args.db)
+    # Default to in-memory if no database path
+    db_path = args.db or ":memory:"
+
+    # Connect to DuckDB and export table to CSV
+    db_tool = DuckDBToCSV(db_path)
     try:
         db_tool.connect_to_duckdb()
     except Exception:
         return
 
-    # Export the table to CSV
     try:
         db_tool.export_table_to_csv(args.table, args.output, args.schema)
     except Exception:
         return
 
-    print(f"{Fore.GREEN}Process completed. Goodbye!")
+    print(f"{Fore.GREEN}Export completed. Goodbye! 👋")
 
 if __name__ == "__main__":
     main()

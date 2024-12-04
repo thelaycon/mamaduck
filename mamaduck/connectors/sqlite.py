@@ -2,7 +2,6 @@ import duckdb
 from colorama import Fore, init
 import argparse
 import os
-
 from mamaduck.database.duckdb import DuckDBManager
 
 # Initialize colorama for colored CLI output
@@ -57,7 +56,7 @@ class SQLiteToDuckDB(DuckDBManager):
 
 def start_interactive_mode():
     """Function to handle interactive shell mode."""
-    print(f"{Fore.CYAN}Welcome to the SQLite to DuckDB Migration Tool in interactive mode!")
+    print(f"{Fore.CYAN}🎉 Welcome to the SQLite to DuckDB Migration Tool! 🎉")
 
     # Connect to DuckDB
     duckdb_path = input(f"{Fore.CYAN}Enter DuckDB file name (leave blank for in-memory): ").strip() or None
@@ -95,7 +94,7 @@ def start_interactive_mode():
         for table in tables:
             db_tool.migrate_table(sqlite_path, table, table, schema)
     else:
-        print(f"{Fore.RED}Invalid option.")
+        print(f"{Fore.RED}❌ Invalid option.")
         return
 
     # Export tables to CSV
@@ -103,7 +102,7 @@ def start_interactive_mode():
     if export_choice == 'yes':
         csv_dir = input(f"{Fore.CYAN}Enter directory to store exported CSV files: ").strip()
         if not csv_dir:
-            print(f"{Fore.RED}Error: CSV directory is required for exporting tables.")
+            print(f"{Fore.RED}❌ Error: CSV directory is required for exporting tables.")
             return
 
         os.makedirs(csv_dir, exist_ok=True)
@@ -112,7 +111,7 @@ def start_interactive_mode():
             output_file = os.path.join(csv_dir, f"{table}.csv")
             db_tool.export_table_to_csv(table if not schema else f"{schema}.{table}", output_file)
 
-    print(f"{Fore.GREEN}Process completed successfully. Goodbye!")
+    print(f"{Fore.GREEN}✅ Process completed successfully. Goodbye! 👋")
 
 def process_cli_arguments():
     """Function to process non-interactive CLI arguments."""
@@ -131,7 +130,7 @@ def process_cli_arguments():
         start_interactive_mode()
     else:
         if not args.sqlite:
-            print(f"{Fore.RED}Error: SQLite database file path is required.")
+            print(f"{Fore.RED}❌ Error: SQLite database file path is required.")
             return
         
         sqlite_path = args.sqlite
@@ -162,7 +161,7 @@ def process_cli_arguments():
                 if table in tables:
                     db_tool.migrate_table(sqlite_path, table, table, schema)
                 else:
-                    print(f"{Fore.RED}Table '{table}' not found in SQLite database.")
+                    print(f"{Fore.RED}❌ Table '{table}' not found in SQLite database.")
         else:
             for table in tables:
                 db_tool.migrate_table(sqlite_path, table, table, schema)
@@ -170,7 +169,7 @@ def process_cli_arguments():
         # Export tables to CSV
         if args.export:
             if not args.csv_dir:
-                print(f"{Fore.RED}Error: CSV directory is required for exporting tables.")
+                print(f"{Fore.RED}❌ Error: CSV directory is required for exporting tables.")
                 return
 
             os.makedirs(args.csv_dir, exist_ok=True)
@@ -179,7 +178,7 @@ def process_cli_arguments():
                 output_file = os.path.join(args.csv_dir, f"{table}.csv")
                 db_tool.export_table_to_csv(table if not schema else f"{schema}.{table}", output_file)
 
-        print(f"{Fore.GREEN}Process completed successfully. Goodbye!")
+        print(f"{Fore.GREEN}✅ Process completed successfully. Goodbye! 👋")
 
 def main():
     process_cli_arguments()

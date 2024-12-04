@@ -109,28 +109,30 @@ def export_tables_to_csv(db_tool, tables, schema, csv_dir):
 
 def start_interactive_mode():
     """Interactive mode for PostgreSQL to DuckDB migration."""
-    print(f"{Fore.CYAN}Welcome to the PostgreSQL to DuckDB Migration Tool in interactive mode!")
+    print(f"{Fore.CYAN}🎉 Welcome to the PostgreSQL to DuckDB Migration Tool! 🎉")
 
     psql_conn_string = get_postgresql_connection_string()
     db_tool = initialize_duckdb_and_attach_postgresql(psql_conn_string)
     if not db_tool:
         return
 
-    tables = db_tool.list_postgresql_tables()
-    schema = input(f"{Fore.CYAN}Enter schema name (leave blank for no schema): ").strip() or None
+    print(f"{Fore.GREEN}✅ Connected to DuckDB and PostgreSQL successfully.")
 
-    migrate_choice = input(f"{Fore.CYAN}Migrate all tables or single table? (all/single): ").strip().lower()
+    tables = db_tool.list_postgresql_tables()
+    schema = input(f"{Fore.CYAN}🔑 Enter schema name (press Enter for no schema): ").strip() or None
+
+    migrate_choice = input(f"{Fore.CYAN}🚀 Migrate all tables or a single table? (all/single): ").strip().lower()
     list_and_migrate_tables(db_tool, migrate_choice, schema)
 
-    csv_dir = input(f"{Fore.CYAN}Enter directory to store exported CSV files (leave blank to skip): ").strip()
+    csv_dir = input(f"{Fore.CYAN}📂 Enter directory for CSV export (press Enter to skip): ").strip()
 
-    # If the user provides a directory, proceed with exporting tables to CSV
+    # Export to CSV if directory provided
     if csv_dir:
         export_tables_to_csv(db_tool, tables, schema, csv_dir)
     else:
-        print(f"{Fore.YELLOW}Skipping CSV export...")
+        print(f"{Fore.YELLOW}⚠️ Skipping CSV export...")
 
-    print(f"{Fore.GREEN}Process completed successfully. Goodbye!")
+    print(f"{Fore.GREEN}✅ Migration completed successfully. Goodbye! 👋")
 
 def process_cli_arguments():
     """Process command-line arguments."""
@@ -155,11 +157,11 @@ def main():
 
     # Validate required arguments for non-interactive mode
     if not args.db or not args.psql_conn_string or not args.tables:
-        print(f"{Fore.RED}Error: '--db', '--psql_conn_string', and '--table' arguments are required in non-interactive mode.")
+        print(f"{Fore.RED}❌ Error: '--db', '--psql_conn_string', and '--tables' arguments are required.")
         return
 
     if not args.psql_conn_string:
-        print(f"{Fore.RED}Error: PostgreSQL connection string is required.")
+        print(f"{Fore.RED}❌ Error: PostgreSQL connection string is required.")
         return
 
     psql_conn_string = args.psql_conn_string
@@ -173,7 +175,7 @@ def main():
 
     try:
         tables = db_tool.list_postgresql_tables()
-        print(f"{Fore.GREEN}Tables in PostgreSQL database: {', '.join(tables) if tables else 'No tables found.'}")
+        print(f"{Fore.GREEN}✅ Tables in PostgreSQL database: {', '.join(tables) if tables else 'No tables found.'}")
     except Exception:
         return
 
@@ -186,14 +188,14 @@ def main():
             if table in tables:
                 db_tool.migrate_table(table, table, schema)
             else:
-                print(f"{Fore.RED}Table '{table}' not found in PostgreSQL database.")
+                print(f"{Fore.RED}❌ Table '{table}' not found in PostgreSQL.")
     else:
         for table in tables:
             db_tool.migrate_table(table, table, schema)
 
     if args.export:
         if not args.csv_dir:
-            print(f"{Fore.RED}Error: CSV directory is required for exporting tables.")
+            print(f"{Fore.RED}❌ Error: CSV directory is required for exporting tables.")
             return
 
         os.makedirs(args.csv_dir, exist_ok=True)
@@ -201,7 +203,7 @@ def main():
             output_file = os.path.join(args.csv_dir, f"{table}.csv")
             db_tool.export_table_to_csv(table if not schema else f"{schema}.{table}", output_file)
 
-    print(f"{Fore.GREEN}Process completed successfully. Goodbye!")
+    print(f"{Fore.GREEN}✅ Migration and export completed successfully! 👋")
 
 if __name__ == "__main__":
     main()
