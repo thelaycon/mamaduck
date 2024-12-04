@@ -164,18 +164,6 @@ li {
     gap: 10px;
 }
 
-.view-btn, .btn-small {
-    padding: 5px 10px;
-    border-radius: 5px;
-    border: none;
-    font-size: 14px;
-}
-
-.view-btn {
-    background-color: #1cc88a;
-    color: white;
-}
-
 .btn-small {
     background-color: #4e73df;
     color: white;
@@ -226,13 +214,7 @@ footer {
     color: #333;
 }
 
-.btn-group {
-    display: flex;
-    gap: 10px;
-}
-
 .view-btn, .btn-small {
-    padding: 5px 10px;
     border-radius: 5px;
     border: none;
     font-size: 14px;
