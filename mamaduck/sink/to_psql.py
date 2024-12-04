@@ -1,7 +1,8 @@
 import duckdb
 import os
 import getpass  # For securely handling password input
-from colorama import Fore, Style, init
+from colorama import Fore, init
+import argparse
 
 # Initialize colorama for colored CLI output
 init(autoreset=True)
@@ -15,7 +16,6 @@ class DuckDBToPostgreSQL:
         self.psql_conn_string = psql_conn_string
         self.ensure_database_folder()
 
-
     @staticmethod
     def ensure_database_folder():
         """Ensure the 'databases' folder exists."""
@@ -23,13 +23,12 @@ class DuckDBToPostgreSQL:
             os.makedirs(DuckDBToPostgreSQL.DATABASE_FOLDER)
             print(f"{Fore.GREEN}Created folder: '{DuckDBToPostgreSQL.DATABASE_FOLDER}'")
 
-
     def connect_to_duckdb(self):
         """Connect to either an in-memory or file-based DuckDB database."""
         try:
             if self.db_path:
                 full_path = os.path.join(DuckDBToPostgreSQL.DATABASE_FOLDER, self.db_path)
-                print(full_path)
+                print(f"{Fore.CYAN}Connecting to DuckDB database: {full_path}")
                 self.duckdb_conn = duckdb.connect(database=full_path)
                 print(f"{Fore.GREEN}Connected to DuckDB database file '{full_path}'.")
             else:
@@ -109,24 +108,54 @@ def get_postgresql_connection_string():
     return f"dbname={dbname} user={user} host={host} port={port} password={password}"
 
 def main():
-    print(f"{Fore.CYAN}Welcome to the DuckDB to PostgreSQL Transfer Tool!")
-    duckdb_db_name = input(f"{Fore.CYAN}Enter the DuckDB database name (located in 'databases' folder): ").strip()
+    parser = argparse.ArgumentParser(description="DuckDB to PostgreSQL Transfer Tool")
+    parser.add_argument("--cli", action="store_true", help="Trigger interactive mode")
+    args = parser.parse_args()
 
-    psql_conn_string = get_postgresql_connection_string()
-    db_tool = DuckDBToPostgreSQL(duckdb_db_name, psql_conn_string)
-    db_tool.connect_to_duckdb()
-    db_tool.attach_postgresql()
+    if args.cli:
+        print(f"{Fore.CYAN}Running in interactive mode...")
 
-    source_table_name = input(f"{Fore.CYAN}Enter the DuckDB table to transfer: ").strip()
-    psql_table_name = input(f"{Fore.CYAN}Enter the PostgreSQL table to create: ").strip()
-    column_definitions = db_tool.get_table_columns(source_table_name)
-    db_tool.create_table_in_psql(psql_table_name, column_definitions)
-    db_tool.transfer_data_to_psql(source_table_name, psql_table_name)
+        # Interactive mode: Get user input for all details
+        duckdb_db_name = input(f"{Fore.CYAN}Enter the DuckDB database name (located in 'databases' folder): ").strip()
+        psql_conn_string = get_postgresql_connection_string()
+        db_tool = DuckDBToPostgreSQL(duckdb_db_name, psql_conn_string)
+        
+        db_tool.connect_to_duckdb()
+        db_tool.attach_postgresql()
 
-    if input(f"{Fore.CYAN}Preview PostgreSQL table data? (yes/no): ").strip().lower() == "yes":
+        source_table_name = input(f"{Fore.CYAN}Enter the DuckDB table to transfer: ").strip()
+        psql_table_name = input(f"{Fore.CYAN}Enter the PostgreSQL table to create: ").strip()
+        column_definitions = db_tool.get_table_columns(source_table_name)
+        db_tool.create_table_in_psql(psql_table_name, column_definitions)
+        db_tool.transfer_data_to_psql(source_table_name, psql_table_name)
+
+        if input(f"{Fore.CYAN}Preview PostgreSQL table data? (yes/no): ").strip().lower() == "yes":
+            db_tool.preview_psql_data(psql_table_name)
+        
+        db_tool.close_connections()
+
+    else:
+        # Non-interactive mode: Provide details via arguments
+        print(f"{Fore.CYAN}Running in non-interactive mode...")
+
+        # Get the necessary information here, for example, using hardcoded parameters or passing arguments directly.
+        duckdb_db_name = "example.duckdb"  # Example: You can pass this as an argument instead of interactively
+        psql_conn_string = "dbname=your_db user=your_user host=localhost port=5432 password=your_password"  # Pass this via args
+        db_tool = DuckDBToPostgreSQL(duckdb_db_name, psql_conn_string)
+        
+        db_tool.connect_to_duckdb()
+        db_tool.attach_postgresql()
+
+        # Assuming some source and target tables are provided
+        source_table_name = "your_duckdb_table"
+        psql_table_name = "your_psql_table"
+        column_definitions = db_tool.get_table_columns(source_table_name)
+        db_tool.create_table_in_psql(psql_table_name, column_definitions)
+        db_tool.transfer_data_to_psql(source_table_name, psql_table_name)
+
         db_tool.preview_psql_data(psql_table_name)
-
-    db_tool.close_connections()
+        
+        db_tool.close_connections()
 
 if __name__ == "__main__":
     main()

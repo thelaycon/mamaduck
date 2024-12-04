@@ -17,8 +17,7 @@ class DuckDBToSQLite:
     def connect_to_duckdb(self):
         """Connect to the DuckDB database."""
         try:
-            full_path = os.path.join('databases', self.db_path)
-            self.connection = duckdb.connect(full_path)
+            self.connection = duckdb.connect(self.db_path)
             print(f"{Fore.GREEN}Connected to DuckDB database at '{self.db_path}'.")
         except Exception as e:
             print(f"{Fore.RED}Failed to connect to DuckDB: {e}")
@@ -94,7 +93,10 @@ def main():
         description="Transfer data from a DuckDB database to an SQLite database."
     )
     parser.add_argument(
-        "-d", "--duckdb",
+        "--cli", action="store_true", help="Trigger interactive mode"
+    )
+    parser.add_argument(
+        "-d", "--db",
         help="Path to the DuckDB database file (relative to the 'databases' folder)."
     )
     parser.add_argument(
@@ -119,14 +121,25 @@ def main():
     )
     args = parser.parse_args()
 
-    # Interactive fallback if arguments are not provided
-    db_path = os.path.join(DuckDBToSQLite.DATABASE_FOLDER, args.duckdb) if args.duckdb else input(
-        f"{Fore.CYAN}Enter the name of the DuckDB database (in 'databases' folder): ").strip()
-    sqlite_db_path = args.sqlite or input(f"{Fore.CYAN}Enter the path to the SQLite database: ").strip()
-    source_table_name = args.table or input(f"{Fore.CYAN}Enter the name of the DuckDB table to transfer: ").strip()
-    sqlite_table_name = args.newtable or input(f"{Fore.CYAN}Enter the name of the SQLite table to create: ").strip()
-    preview = args.preview or input(f"{Fore.CYAN}Would you like to preview the data in SQLite? (yes/no): ").strip().lower() == 'yes'
-    records = args.records if args.preview else int(input(f"{Fore.CYAN}Enter the number of records to preview: "))
+    if args.cli:
+        print(f"{Fore.CYAN}Running in interactive mode...")
+
+        # Interactive mode: Prompt for user input
+        db_path = input(f"{Fore.CYAN}Enter the name of the DuckDB database (in 'databases' folder): ").strip()
+        sqlite_db_path = input(f"{Fore.CYAN}Enter the path to the SQLite database: ").strip()
+        source_table_name = input(f"{Fore.CYAN}Enter the name of the DuckDB table to transfer: ").strip()
+        sqlite_table_name = input(f"{Fore.CYAN}Enter the name of the SQLite table to create: ").strip()
+        preview = input(f"{Fore.CYAN}Would you like to preview the data in SQLite? (yes/no): ").strip().lower() == 'yes'
+        records = int(input(f"{Fore.CYAN}Enter the number of records to preview: ")) if preview else 10
+
+    else:
+        # Non-interactive mode: Use arguments passed in
+        db_path = os.path.join(DuckDBToSQLite.DATABASE_FOLDER, args.db) if args.db else None
+        sqlite_db_path = args.sqlite
+        source_table_name = args.table
+        sqlite_table_name = args.newtable
+        preview = args.preview
+        records = args.records if args.preview else 10
 
     db_tool = DuckDBToSQLite(db_path, sqlite_db_path)
     db_tool.connect_to_duckdb()
