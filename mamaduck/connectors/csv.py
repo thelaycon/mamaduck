@@ -1,5 +1,6 @@
 import duckdb
 import os
+import argparse
 from colorama import Fore, Style, init
 
 # Initialize colorama for colored CLI output
@@ -76,84 +77,126 @@ class CSVToDuckDB:
             raise
 
 def main():
-    print(f"{Fore.CYAN}Welcome to the CSV to DuckDB Tool!")
+    parser = argparse.ArgumentParser(description="CSV to DuckDB tool")
+    
+    # Command-line arguments
+    parser.add_argument('--db', type=str, help="Path to the DuckDB database file (leave blank for in-memory).")
+    parser.add_argument('--csv', type=str, help="Path to the CSV file to load into DuckDB.")
+    parser.add_argument('--table', type=str, help="Name of the table to create in DuckDB.")
+    parser.add_argument('--schema', type=str, help="Schema name (optional).")
+    parser.add_argument('--export', type=str, help="Export the table to a CSV file (provide output file name).")
+    parser.add_argument('--query', action='store_true', help="Query the table after loading data (limit 10 rows).")
+    parser.add_argument('-cli', action='store_true', help="Trigger the interactive shell mode.")
+    
+    args = parser.parse_args()
 
-    # Ensure the databases folder exists
-    CSVToDuckDB.ensure_database_folder()
+    # If -cli is passed, trigger the interactive mode
+    if args.cli:
+        print(f"{Fore.CYAN}Welcome to the CSV to DuckDB Tool in interactive mode!")
+        # Ensure the databases folder exists
+        CSVToDuckDB.ensure_database_folder()
 
-    # Ask user whether to use an in-memory database or a persistent file
-    print(f"{Fore.CYAN}Would you like to use an in-memory database or a persistent file? (memory/file): ", end="")
-    db_choice = input().strip().lower()
-    if db_choice == 'file':
-        print(f"{Fore.CYAN}Enter the DuckDB file name (existing or new, without path): ", end="")
-        db_path = input().strip()
-    elif db_choice == 'memory':
-        db_path = None
+        # Ask user whether to use an in-memory database or a persistent file
+        print(f"{Fore.CYAN}Would you like to use an in-memory database or a persistent file? (memory/file): ", end="")
+        db_choice = input().strip().lower()
+        if db_choice == 'file':
+            print(f"{Fore.CYAN}Enter the DuckDB file name (existing or new, without path): ", end="")
+            db_path = input().strip()
+        elif db_choice == 'memory':
+            db_path = None
+        else:
+            print(f"{Fore.RED}Invalid choice. Please choose 'memory' or 'file'.")
+            return
+
+        # Initialize and connect to DuckDB
+        db_tool = CSVToDuckDB(db_path)
+        db_tool.connect_to_duckdb()
+
+        # Schema management
+        print(f"{Fore.CYAN}Would you like to create a new schema or choose an existing one? (create/choose/none): ", end="")
+        schema_action = input().strip().lower()
+        schema = None
+
+        if schema_action == 'create':
+            print(f"{Fore.CYAN}Enter the name of the new schema: ", end="")
+            schema = input().strip()
+        elif schema_action == 'choose':
+            print(f"{Fore.CYAN}Fetching existing schemas...")
+            schemas = db_tool.connection.execute("SELECT schema_name FROM information_schema.schemata;").fetchall()
+            schemas = [s[0] for s in schemas]
+            print(f"{Fore.CYAN}Existing schemas: {schemas}")
+            print(f"{Fore.CYAN}Enter the name of the existing schema: ", end="")
+            schema = input().strip()
+        elif schema_action != 'none':
+            print(f"{Fore.RED}Invalid option. Please choose 'create', 'choose', or 'none'.")
+            return
+
+        # Prompt for CSV file name
+        print(f"{Fore.CYAN}Enter the CSV file name (with path if needed): ", end="")
+        file_name = input().strip()
+        if not os.path.exists(file_name):
+            print(f"{Fore.RED}Error: File '{file_name}' does not exist.")
+            return
+
+        # Prompt for table name
+        print(f"{Fore.CYAN}Enter the name of the table to create in DuckDB: ", end="")
+        table_name = input().strip()
+
+        # Load CSV data into DuckDB table
+        try:
+            db_tool.load_csv_to_table(file_name, table_name, schema)
+        except Exception:
+            return
+
+        # Query the table to verify contents
+        print(f"{Fore.CYAN}Would you like to view the table data? (yes/no): ", end="")
+        query_action = input().strip().lower()
+        if query_action == 'yes':
+            try:
+                db_tool.query_table(table_name, schema)
+            except Exception:
+                return
+
+        # Export the table to a CSV file
+        print(f"{Fore.CYAN}Would you like to export the table to a CSV file? (yes/no): ", end="")
+        export_action = input().strip().lower()
+        if export_action == 'yes':
+            print(f"{Fore.CYAN}Enter the output file name (with path if needed): ", end="")
+            output_file = input().strip()
+            try:
+                db_tool.export_table_to_csv(table_name, output_file, schema)
+            except Exception:
+                return
+
+        print(f"{Fore.GREEN}Process completed. Goodbye!")
+
     else:
-        print(f"{Fore.RED}Invalid choice. Please choose 'memory' or 'file'.")
-        return
+        # If no -cli argument is passed, process other command-line arguments
+        db_tool = CSVToDuckDB(args.db)
+        db_tool.connect_to_duckdb()
 
-    # Initialize and connect to DuckDB
-    db_tool = CSVToDuckDB(db_path)
-    db_tool.connect_to_duckdb()
+        # Load CSV into DuckDB table
+        if args.csv and args.table:
+            try:
+                db_tool.load_csv_to_table(args.csv, args.table, args.schema)
+            except Exception:
+                return
 
-    # Schema management
-    print(f"{Fore.CYAN}Would you like to create a new schema or choose an existing one? (create/choose/none): ", end="")
-    schema_action = input().strip().lower()
-    schema = None
+        # Query the table to verify contents if --query is set
+        if args.query:
+            try:
+                db_tool.query_table(args.table, args.schema)
+            except Exception:
+                return
 
-    if schema_action == 'create':
-        print(f"{Fore.CYAN}Enter the name of the new schema: ", end="")
-        schema = input().strip()
-    elif schema_action == 'choose':
-        print(f"{Fore.CYAN}Fetching existing schemas...")
-        schemas = db_tool.connection.execute("SELECT schema_name FROM information_schema.schemata;").fetchall()
-        schemas = [s[0] for s in schemas]
-        print(f"{Fore.CYAN}Existing schemas: {schemas}")
-        print(f"{Fore.CYAN}Enter the name of the existing schema: ", end="")
-        schema = input().strip()
-    elif schema_action != 'none':
-        print(f"{Fore.RED}Invalid option. Please choose 'create', 'choose', or 'none'.")
-        return
+        # Export the table to CSV if --export is set
+        if args.export:
+            try:
+                db_tool.export_table_to_csv(args.table, args.export, args.schema)
+            except Exception:
+                return
 
-    # Prompt for CSV file name
-    print(f"{Fore.CYAN}Enter the CSV file name (with path if needed): ", end="")
-    file_name = input().strip()
-    if not os.path.exists(file_name):
-        print(f"{Fore.RED}Error: File '{file_name}' does not exist.")
-        return
-
-    # Prompt for table name
-    print(f"{Fore.CYAN}Enter the name of the table to create in DuckDB: ", end="")
-    table_name = input().strip()
-
-    # Load CSV data into DuckDB table
-    try:
-        db_tool.load_csv_to_table(file_name, table_name, schema)
-    except Exception:
-        return
-
-    # Query the table to verify contents
-    print(f"{Fore.CYAN}Would you like to view the table data? (yes/no): ", end="")
-    query_action = input().strip().lower()
-    if query_action == 'yes':
-        try:
-            db_tool.query_table(table_name, schema)
-        except Exception:
-            return
-
-    # Export the table to a CSV file
-    print(f"{Fore.CYAN}Would you like to export the table to a CSV file? (yes/no): ", end="")
-    export_action = input().strip().lower()
-    if export_action == 'yes':
-        print(f"{Fore.CYAN}Enter the output file name (with path if needed): ", end="")
-        output_file = input().strip()
-        try:
-            db_tool.export_table_to_csv(table_name, output_file, schema)
-        except Exception:
-            return
-
-    print(f"{Fore.GREEN}Process completed. Goodbye!")
+        print(f"{Fore.GREEN}Process completed. Goodbye!")
 
 if __name__ == "__main__":
     main()
