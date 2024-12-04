@@ -1,3 +1,4 @@
+import argparse
 import duckdb
 import os
 from colorama import Fore, init
@@ -8,16 +9,17 @@ init(autoreset=True)
 class DuckDBToSQLite:
     DATABASE_FOLDER = "databases"
 
-    def __init__(self, duckdb_db_path, sqlite_db_path):
-        self.duckdb_db_path = duckdb_db_path
+    def __init__(self, db_path, sqlite_db_path):
+        self.db_path = db_path
         self.sqlite_db_path = sqlite_db_path
         self.connection = None
 
     def connect_to_duckdb(self):
         """Connect to the DuckDB database."""
         try:
-            self.connection = duckdb.connect(self.duckdb_db_path)
-            print(f"{Fore.GREEN}Connected to DuckDB database at '{self.duckdb_db_path}'.")
+            full_path = os.path.join('databases', self.db_path)
+            self.connection = duckdb.connect(full_path)
+            print(f"{Fore.GREEN}Connected to DuckDB database at '{self.db_path}'.")
         except Exception as e:
             print(f"{Fore.RED}Failed to connect to DuckDB: {e}")
             raise
@@ -88,43 +90,55 @@ class DuckDBToSQLite:
             print(f"{Fore.GREEN}Connection to DuckDB closed.")
 
 def main():
-    # Get the DuckDB database path from the user
-    duckdb_db_name = input(f"{Fore.CYAN}Enter the name of the DuckDB database (in 'databases' folder): ").strip()
-    duckdb_db_path = os.path.join(DuckDBToSQLite.DATABASE_FOLDER, duckdb_db_name)
-    
-    if not os.path.exists(duckdb_db_path):
-        print(f"{Fore.RED}DuckDB database file does not exist at '{duckdb_db_path}'.")
-        return
+    parser = argparse.ArgumentParser(
+        description="Transfer data from a DuckDB database to an SQLite database."
+    )
+    parser.add_argument(
+        "-d", "--duckdb",
+        help="Path to the DuckDB database file (relative to the 'databases' folder)."
+    )
+    parser.add_argument(
+        "-s", "--sqlite",
+        help="Path to the SQLite database file."
+    )
+    parser.add_argument(
+        "-t", "--table",
+        help="Name of the source table in DuckDB."
+    )
+    parser.add_argument(
+        "-n", "--newtable",
+        help="Name of the new table to create in SQLite."
+    )
+    parser.add_argument(
+        "-p", "--preview", action="store_true",
+        help="Preview the data in the SQLite table after transfer."
+    )
+    parser.add_argument(
+        "-r", "--records", type=int, default=10,
+        help="Number of records to preview if --preview is enabled (default: 10)."
+    )
+    args = parser.parse_args()
 
-    # Get the SQLite database path from the user
-    sqlite_db_path = input(f"{Fore.CYAN}Enter the path to the SQLite database: ").strip()
+    # Interactive fallback if arguments are not provided
+    db_path = os.path.join(DuckDBToSQLite.DATABASE_FOLDER, args.duckdb) if args.duckdb else input(
+        f"{Fore.CYAN}Enter the name of the DuckDB database (in 'databases' folder): ").strip()
+    sqlite_db_path = args.sqlite or input(f"{Fore.CYAN}Enter the path to the SQLite database: ").strip()
+    source_table_name = args.table or input(f"{Fore.CYAN}Enter the name of the DuckDB table to transfer: ").strip()
+    sqlite_table_name = args.newtable or input(f"{Fore.CYAN}Enter the name of the SQLite table to create: ").strip()
+    preview = args.preview or input(f"{Fore.CYAN}Would you like to preview the data in SQLite? (yes/no): ").strip().lower() == 'yes'
+    records = args.records if args.preview else int(input(f"{Fore.CYAN}Enter the number of records to preview: "))
 
-    # Initialize the class and connect to DuckDB
-    db_tool = DuckDBToSQLite(duckdb_db_path, sqlite_db_path)
+    db_tool = DuckDBToSQLite(db_path, sqlite_db_path)
     db_tool.connect_to_duckdb()
-
-    # Attach SQLite database
     db_tool.attach_sqlite_database()
 
-    # Define the source table from DuckDB and the target table in SQLite
-    source_table_name = input(f"{Fore.CYAN}Enter the name of the DuckDB table to transfer: ").strip()
-    sqlite_table_name = input(f"{Fore.CYAN}Enter the name of the SQLite table to create: ").strip()
-
-    # Get column definitions for the source DuckDB table
     column_definitions = db_tool.get_table_columns(source_table_name)
-
-    # Create the target table in SQLite dynamically
     db_tool.create_table_in_sqlite(sqlite_table_name, column_definitions)
-
-    # Transfer data from DuckDB to SQLite
     db_tool.transfer_data_to_sqlite(source_table_name, sqlite_table_name)
 
-    # Ask the user if they want to preview the data in SQLite
-    preview_action = input(f"{Fore.CYAN}Would you like to preview the data in the SQLite table? (yes/no): ").strip().lower()
-    if preview_action == 'yes':
-        db_tool.preview_sqlite_data(sqlite_table_name)
+    if preview:
+        db_tool.preview_sqlite_data(sqlite_table_name, records)
 
-    # Close connection
     db_tool.close_connection()
 
 if __name__ == "__main__":
