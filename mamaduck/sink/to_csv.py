@@ -3,34 +3,19 @@ import duckdb
 import os
 from colorama import Fore, Style, init
 
+from mamaduck.database.duckdb import DuckDBManager
+
 # Initialize colorama for colored CLI output
 init(autoreset=True)
 
-class DuckDBToCSV:
-    def __init__(self, db_path=None):
-        self.connection = None
-        self.db_path = db_path
-
-    def connect_to_duckdb(self):
-        """Connect to either an in-memory or file-based DuckDB database."""
-        try:
-            if self.db_path:
-                full_path = os.path.join('databases', self.db_path)
-                self.connection = duckdb.connect(database=full_path)
-                print(f"{Fore.GREEN}Connected to DuckDB database file '{full_path}'.")
-            else:
-                self.connection = duckdb.connect(database=':memory:')
-                print(f"{Fore.GREEN}Connected to an in-memory DuckDB database.")
-        except Exception as e:
-            print(f"{Fore.RED}Failed to connect to DuckDB database: {e}")
-            raise
+class DuckDBToCSV (DuckDBManager):
 
     def export_table_to_csv(self, table_name, output_file, schema=None):
         """Export the contents of a DuckDB table to a CSV file."""
         try:
             table = f"{schema}.{table_name}" if schema else table_name
             print(f"{Fore.BLUE}Exporting table '{table}' to file '{output_file}'...")
-            self.connection.execute(f"COPY {table} TO '{output_file}' WITH (HEADER, DELIMITER ',');")
+            self.duckdb_conn.execute(f"COPY {table} TO '{output_file}' WITH (HEADER, DELIMITER ',');")
             print(f"{Fore.GREEN}Table '{table}' successfully exported to '{output_file}'.")
         except Exception as e:
             print(f"{Fore.RED}Failed to export table to CSV: {e}")
@@ -78,12 +63,12 @@ def main():
     parser.add_argument('--table', type=str, help="Name of the DuckDB table to export.")
     parser.add_argument('--schema', type=str, help="Schema of the table (optional).")
     parser.add_argument('--output', type=str, help="Output CSV file path.")
-    parser.add_argument('--interactive', action='store_true', help="Run the script in interactive mode.")
+    parser.add_argument('--cli', action='store_true', help="Run the script in interactive mode.")
 
     args = parser.parse_args()
 
     # Run in interactive mode if specified
-    if args.interactive:
+    if args.cli:
         interactive_mode()
         return
 
