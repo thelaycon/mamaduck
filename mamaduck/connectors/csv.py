@@ -6,18 +6,33 @@ from colorama import Fore, Style, init
 init(autoreset=True)
 
 class CSVToDuckDB:
+    DATABASE_FOLDER = "databases"
+
     def __init__(self, db_path=None):
         self.connection = None
         self.db_path = db_path
+        self.ensure_database_folder()
+
+    @staticmethod
+    def ensure_database_folder():
+        """Ensure the 'databases' folder exists."""
+        if not os.path.exists(CSVToDuckDB.DATABASE_FOLDER):
+            os.makedirs(CSVToDuckDB.DATABASE_FOLDER)
+            print(f"{Fore.GREEN}Created folder: '{CSVToDuckDB.DATABASE_FOLDER}'")
 
     def connect_to_duckdb(self):
         """Connect to either an in-memory or file-based DuckDB database."""
-        if self.db_path:
-            self.connection = duckdb.connect(database=self.db_path)
-            print(f"{Fore.GREEN}Connected to DuckDB database file '{self.db_path}'.")
-        else:
-            self.connection = duckdb.connect(database=':memory:')
-            print(f"{Fore.GREEN}Connected to an in-memory DuckDB database.")
+        try:
+            if self.db_path:
+                full_path = os.path.join(CSVToDuckDB.DATABASE_FOLDER, self.db_path)
+                self.connection = duckdb.connect(database=full_path)
+                print(f"{Fore.GREEN}Connected to DuckDB database file '{full_path}'.")
+            else:
+                self.connection = duckdb.connect(database=':memory:')
+                print(f"{Fore.GREEN}Connected to an in-memory DuckDB database.")
+        except Exception as e:
+            print(f"{Fore.RED}Failed to connect to DuckDB database: {e}")
+            raise
 
     def load_csv_to_table(self, file_name, table_name, schema=None):
         """Load CSV data into a DuckDB table in the selected schema."""
@@ -63,11 +78,14 @@ class CSVToDuckDB:
 def main():
     print(f"{Fore.CYAN}Welcome to the CSV to DuckDB Tool!")
 
+    # Ensure the databases folder exists
+    CSVToDuckDB.ensure_database_folder()
+
     # Ask user whether to use an in-memory database or a persistent file
     print(f"{Fore.CYAN}Would you like to use an in-memory database or a persistent file? (memory/file): ", end="")
     db_choice = input().strip().lower()
     if db_choice == 'file':
-        print(f"{Fore.CYAN}Enter the DuckDB file name (existing or new): ", end="")
+        print(f"{Fore.CYAN}Enter the DuckDB file name (existing or new, without path): ", end="")
         db_path = input().strip()
     elif db_choice == 'memory':
         db_path = None
@@ -79,7 +97,7 @@ def main():
     db_tool = CSVToDuckDB(db_path)
     db_tool.connect_to_duckdb()
 
-    # Ask if user wants to create or choose a schema
+    # Schema management
     print(f"{Fore.CYAN}Would you like to create a new schema or choose an existing one? (create/choose/none): ", end="")
     schema_action = input().strip().lower()
     schema = None
@@ -90,6 +108,7 @@ def main():
     elif schema_action == 'choose':
         print(f"{Fore.CYAN}Fetching existing schemas...")
         schemas = db_tool.connection.execute("SELECT schema_name FROM information_schema.schemata;").fetchall()
+        schemas = [s[0] for s in schemas]
         print(f"{Fore.CYAN}Existing schemas: {schemas}")
         print(f"{Fore.CYAN}Enter the name of the existing schema: ", end="")
         schema = input().strip()
