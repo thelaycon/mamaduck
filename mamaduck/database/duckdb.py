@@ -48,6 +48,22 @@ class DuckDBManager:
         else:
             print(f"{Fore.RED}No DuckDB database files found in the '{DuckDBManager.DATABASE_FOLDER}' folder.")
 
+
+    def query_table(self, table_name, schema=None):
+        """Query DuckDB table."""
+        try:
+            table = f"{schema}.{table_name}" if schema else table_name
+            print(f"{Fore.CYAN}🔍 Fetching data from '{table}'...")
+            result = self.duckdb_conn.execute(f"SELECT * FROM {table} LIMIT 10;").fetchall()
+            columns = [desc[0] for desc in self.duckdb_conn.execute(f"PRAGMA table_info('{table}');").fetchall()]
+            print(f"{Fore.GREEN}✅ Showing 10 records from '{table}':")
+            print(f"{Fore.CYAN}{columns}")
+            for row in result:
+                print(f"{Fore.YELLOW}{row}")
+        except Exception as e:
+            print(f"{Fore.RED}❌ Error: {e}")
+            raise
+
 def main():
     print(f"{Fore.CYAN}Welcome to the DuckDB Manager Tool!")
 

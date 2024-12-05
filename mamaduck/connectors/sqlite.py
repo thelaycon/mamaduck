@@ -56,11 +56,19 @@ class SQLiteToDuckDB(DuckDBManager):
 
 def start_interactive_mode():
     """Function to handle interactive shell mode."""
-    print(f"{Fore.CYAN}🎉 Welcome to the SQLite to DuckDB Migration Tool! 🎉")
+    print(f"{Fore.CYAN}👋 MamaDuck")
 
-    # Connect to DuckDB
-    duckdb_path = input(f"{Fore.CYAN}Enter DuckDB file name (leave blank for in-memory): ").strip() or None
-    db_tool = SQLiteToDuckDB(duckdb_path)
+    # Choose database type (in-memory or file)
+    db_choice = input(f"{Fore.CYAN}💡 Use in-memory or persistent file DB? (memory/file): ").strip().lower()
+    if db_choice == 'file':
+        db_path = input(f"{Fore.CYAN}🔑 Enter DuckDB file name (existing/new): ").strip()
+    elif db_choice == 'memory':
+        db_path = None
+    else:
+        print(f"{Fore.RED}❌ Invalid choice. Choose 'memory' or 'file'.")
+        return
+
+    db_tool = SQLiteToDuckDB(db_path)
     db_tool.connect_to_duckdb()
 
     # Load SQLite extension
@@ -79,13 +87,26 @@ def start_interactive_mode():
     except Exception:
         return
 
-    # Schema setup
-    schema = input(f"{Fore.CYAN}Enter schema name (leave blank for no schema): ").strip() or None
+    # Schema handling
+    schema_action = input(f"{Fore.CYAN}🔨 Create new schema or choose an existing? (create/choose/none): ").strip().lower()
+    schema = None
+    if schema_action == 'create':
+        schema = input(f"{Fore.CYAN}📝 Enter new schema name: ").strip()
+    elif schema_action == 'choose':
+        print(f"{Fore.CYAN}📋 Existing schemas:")
+        schemas = db_tool.duckdb_conn.execute("SELECT schema_name FROM information_schema.schemata;").fetchall()
+        schemas = [s[0] for s in schemas]
+        print(f"{Fore.CYAN}{schemas}")
+        schema = input(f"{Fore.CYAN}Enter schema name: ").strip()
+    elif schema_action != 'none':
+        print(f"{Fore.RED}❌ Invalid choice. Choose 'create', 'choose', or 'none'.")
+        return
+
     if schema:
         db_tool.duckdb_conn.execute(f"CREATE SCHEMA IF NOT EXISTS {schema};")
 
     # Migrate tables
-    migrate_choice = input(f"{Fore.CYAN}Migrate all tables or single table? (all/single): ").strip().lower()
+    migrate_choice = input(f"{Fore.CYAN}🚀 Migrate all tables or a single table? (all/single): ").strip().lower()
     if migrate_choice == 'single':
         sqlite_table = input(f"{Fore.CYAN}Enter the SQLite table to migrate: ").strip()
         duckdb_table = input(f"{Fore.CYAN}Enter the DuckDB table name: ").strip()
@@ -97,23 +118,57 @@ def start_interactive_mode():
         print(f"{Fore.RED}❌ Invalid option.")
         return
 
+    print(f"{Fore.GREEN}✅ Migration completed successfully.")
+
+def process_cli_arguments(args):       
+    sqlite_path = args.sqlite
+    db_tool = SQLiteToDuckDB(args.db)
+    db_tool.connect_to_duckdb()
+
+    # Load SQLite extension
+    try:
+        db_tool.load_sqlite_extension()
+    except Exception:
+        return
+
+    # List SQLite tables
+    try:
+        tables = db_tool.list_sqlite_tables(sqlite_path)
+        print(f"{Fore.GREEN}Tables in SQLite database: {', '.join(tables) if tables else 'No tables found.'}")
+    except Exception:
+        return
+
+    # Schema setup
+    schema = args.schema
+    if schema:
+        db_tool.duckdb_conn.execute(f"CREATE SCHEMA IF NOT EXISTS {schema};")
+
+    # Migrate specified tables
+    if args.tables:
+        for table in args.tables:
+            if table in tables:
+                db_tool.migrate_table(sqlite_path, table, table, schema)
+            else:
+                print(f"{Fore.RED}❌ Table '{table}' not found in SQLite database.")
+    else:
+        for table in tables:
+            db_tool.migrate_table(sqlite_path, table, table, schema)
+
     # Export tables to CSV
-    export_choice = input(f"{Fore.CYAN}Export tables to CSV? (yes/no): ").strip().lower()
-    if export_choice == 'yes':
-        csv_dir = input(f"{Fore.CYAN}Enter directory to store exported CSV files: ").strip()
-        if not csv_dir:
+    if args.export:
+        if not args.csv_dir:
             print(f"{Fore.RED}❌ Error: CSV directory is required for exporting tables.")
             return
 
-        os.makedirs(csv_dir, exist_ok=True)
+        os.makedirs(args.csv_dir, exist_ok=True)
 
-        for table in tables if migrate_choice == 'all' else [duckdb_table]:
-            output_file = os.path.join(csv_dir, f"{table}.csv")
+        for table in tables if args.tables is None else args.tables:
+            output_file = os.path.join(args.csv_dir, f"{table}.csv")
             db_tool.export_table_to_csv(table if not schema else f"{schema}.{table}", output_file)
 
-    print(f"{Fore.GREEN}✅ Process completed successfully. Goodbye! 👋")
+    print(f"{Fore.GREEN}✅ Migration completed successfully.")
 
-def process_cli_arguments():
+def main():
     """Function to process non-interactive CLI arguments."""
     parser = argparse.ArgumentParser(description="SQLite to DuckDB Migration Tool")
     parser.add_argument('--db', type=str, help="Path to the DuckDB database file (leave blank for in-memory).")
@@ -128,59 +183,13 @@ def process_cli_arguments():
 
     if args.cli:
         start_interactive_mode()
-    else:
-        if not args.sqlite:
-            print(f"{Fore.RED}❌ Error: SQLite database file path is required.")
-            return
-        
-        sqlite_path = args.sqlite
-        db_tool = SQLiteToDuckDB(args.db)
-        db_tool.connect_to_duckdb()
+        return
 
-        # Load SQLite extension
-        try:
-            db_tool.load_sqlite_extension()
-        except Exception:
-            return
+    # Validate required arguments for non-interactive mode
+    if not args.db or not args.sqlite or not args.tables:
+        print(f"{Fore.RED}❌ Error: --db, --sqlite, and --tables are required.")
+        return
 
-        # List SQLite tables
-        try:
-            tables = db_tool.list_sqlite_tables(sqlite_path)
-            print(f"{Fore.GREEN}Tables in SQLite database: {', '.join(tables) if tables else 'No tables found.'}")
-        except Exception:
-            return
-
-        # Schema setup
-        schema = args.schema
-        if schema:
-            db_tool.duckdb_conn.execute(f"CREATE SCHEMA IF NOT EXISTS {schema};")
-
-        # Migrate specified tables
-        if args.tables:
-            for table in args.tables:
-                if table in tables:
-                    db_tool.migrate_table(sqlite_path, table, table, schema)
-                else:
-                    print(f"{Fore.RED}❌ Table '{table}' not found in SQLite database.")
-        else:
-            for table in tables:
-                db_tool.migrate_table(sqlite_path, table, table, schema)
-
-        # Export tables to CSV
-        if args.export:
-            if not args.csv_dir:
-                print(f"{Fore.RED}❌ Error: CSV directory is required for exporting tables.")
-                return
-
-            os.makedirs(args.csv_dir, exist_ok=True)
-
-            for table in tables if args.tables is None else args.tables:
-                output_file = os.path.join(args.csv_dir, f"{table}.csv")
-                db_tool.export_table_to_csv(table if not schema else f"{schema}.{table}", output_file)
-
-        print(f"{Fore.GREEN}✅ Process completed successfully. Goodbye! 👋")
-
-def main():
     process_cli_arguments()
 
 if __name__ == "__main__":

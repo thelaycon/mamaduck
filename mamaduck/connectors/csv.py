@@ -53,7 +53,7 @@ class CSVToDuckDB(DuckDBManager):
 
 def start_interactive_mode():
     """Interactive CSV to DuckDB tool."""
-    print(f"{Fore.CYAN}👋 Welcome to the CSV to DuckDB Interactive Tool!")
+    print(f"{Fore.CYAN}👋 MamaDuck")
 
     # Choose database type (in-memory or file)
     db_choice = input(f"{Fore.CYAN}💡 Use in-memory or persistent file DB? (memory/file): ").strip().lower()
@@ -68,6 +68,8 @@ def start_interactive_mode():
     # Initialize and connect to DuckDB
     db_tool = CSVToDuckDB(db_path)
     db_tool.connect_to_duckdb()
+
+    print(f"{Fore.GREEN}✅ Connected to DuckDB successfully.")
 
     # Schema handling
     schema_action = input(f"{Fore.CYAN}🔨 Create new schema or choose an existing? (create/choose/none): ").strip().lower()
@@ -107,16 +109,8 @@ def start_interactive_mode():
         except Exception:
             return
 
-    # Export table to CSV
-    export_action = input(f"{Fore.CYAN}💾 Export table to CSV? (yes/no): ").strip().lower()
-    if export_action == 'yes':
-        output_file = input(f"{Fore.CYAN}📝 Enter output file name: ").strip()
-        try:
-            db_tool.export_table_to_csv(table_name, output_file, schema)
-        except Exception:
-            return
 
-    print(f"{Fore.GREEN}✅ Process completed. Goodbye!")
+    print(f"{Fore.GREEN}✅ Migration completed successfully.")
 
 def process_cli_arguments(args):
     """Handle CLI arguments."""
@@ -129,6 +123,8 @@ def process_cli_arguments(args):
 
     db_tool = CSVToDuckDB(args.db)
     db_tool.connect_to_duckdb()
+
+    print(f"{Fore.GREEN}✅ Connected to DuckDB successfully.")
 
     # Load CSV into DuckDB table
     if args.csv and args.table:
@@ -144,14 +140,7 @@ def process_cli_arguments(args):
         except Exception:
             return
 
-    # Export the table to CSV if --export is set
-    if args.export:
-        try:
-            db_tool.export_table_to_csv(args.table, args.export, args.schema)
-        except Exception:
-            return
-
-    print(f"{Fore.GREEN}✅ Process completed. Goodbye!")
+    print(f"{Fore.GREEN}✅ Migration completed successfully.")
 
 def main():
     """Main function."""
@@ -162,7 +151,6 @@ def main():
     parser.add_argument('--csv', type=str, help="CSV file path to load into DuckDB.")
     parser.add_argument('--table', type=str, help="DuckDB table name to create.")
     parser.add_argument('--schema', type=str, help="Schema name (optional).")
-    parser.add_argument('--export', type=str, help="Export table to CSV (output file name).")
     parser.add_argument('--query', action='store_true', help="Query table after loading (limit 10 rows).")
     parser.add_argument('--cli', action='store_true', help="Trigger interactive shell mode.")
     

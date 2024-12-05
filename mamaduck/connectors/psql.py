@@ -43,14 +43,6 @@ class PostgreSQLToDuckDB(DuckDBManager):
             print(f"{Fore.RED}Failed to migrate table: {e}")
             raise
 
-    def export_table_to_csv(self, table_name, output_file):
-        try:
-            self.duckdb_conn.execute(f"COPY {table_name} TO '{output_file}' WITH (HEADER, DELIMITER ',');")
-            print(f"{Fore.GREEN}Table '{table_name}' successfully exported to '{output_file}'.")
-        except Exception as e:
-            print(f"{Fore.RED}Failed to export table to CSV: {e}")
-            raise
-
 def get_postgresql_connection_string():
     """Get individual PostgreSQL connection parameters and assemble the connection string."""
     print(f"{Fore.CYAN}Please provide the following PostgreSQL connection details:")
@@ -65,7 +57,17 @@ def get_postgresql_connection_string():
 
 def initialize_duckdb_and_attach_postgresql(psql_conn_string):
     """Initialize DuckDB and attach the PostgreSQL database."""
-    db_path = input(f"{Fore.CYAN}Enter DuckDB file name (leave blank for in-memory): ").strip() or None
+
+    # Choose database type (in-memory or file)
+    db_choice = input(f"{Fore.CYAN}💡 Use in-memory or persistent file DB? (memory/file): ").strip().lower()
+    if db_choice == 'file':
+        db_path = input(f"{Fore.CYAN}🔑 Enter DuckDB file name (existing/new): ").strip()
+    elif db_choice == 'memory':
+        db_path = None
+    else:
+        print(f"{Fore.RED}❌ Invalid choice. Choose 'memory' or 'file'.")
+        return
+    
     db_tool = PostgreSQLToDuckDB(db_path, psql_conn_string)
     db_tool.connect_to_duckdb()
 
@@ -94,22 +96,12 @@ def list_and_migrate_tables(db_tool, migrate_choice, schema):
         for table in tables:
             db_tool.migrate_table(table, table, schema)
     else:
-        print(f"{Fore.RED}Invalid option.")
+        print(f"{Fore.RED}❌ Invalid option.")
 
-def export_tables_to_csv(db_tool, tables, schema, csv_dir):
-    """Export migrated tables to CSV."""
-    if not csv_dir:
-        print(f"{Fore.RED}Error: CSV directory is required for exporting tables.")
-        return
-
-    os.makedirs(csv_dir, exist_ok=True)
-    for table in tables:
-        output_file = os.path.join(csv_dir, f"{table}.csv")
-        db_tool.export_table_to_csv(table if not schema else f"{schema}.{table}", output_file)
 
 def start_interactive_mode():
     """Interactive mode for PostgreSQL to DuckDB migration."""
-    print(f"{Fore.CYAN}🎉 Welcome to the PostgreSQL to DuckDB Migration Tool! 🎉")
+    print(f"{Fore.CYAN}👋 MamaDuck")
 
     psql_conn_string = get_postgresql_connection_string()
     db_tool = initialize_duckdb_and_attach_postgresql(psql_conn_string)
@@ -119,20 +111,26 @@ def start_interactive_mode():
     print(f"{Fore.GREEN}✅ Connected to DuckDB and PostgreSQL successfully.")
 
     tables = db_tool.list_postgresql_tables()
-    schema = input(f"{Fore.CYAN}🔑 Enter schema name (press Enter for no schema): ").strip() or None
+
+    # Schema handling
+    schema_action = input(f"{Fore.CYAN}🔨 Create new schema or choose an existing? (create/choose/none): ").strip().lower()
+    schema = None
+    if schema_action == 'create':
+        schema = input(f"{Fore.CYAN}📝 Enter new schema name: ").strip()
+    elif schema_action == 'choose':
+        print(f"{Fore.CYAN}📋 Existing schemas:")
+        schemas = db_tool.duckdb_conn.execute("SELECT schema_name FROM information_schema.schemata;").fetchall()
+        schemas = [s[0] for s in schemas]
+        print(f"{Fore.CYAN}{schemas}")
+        schema = input(f"{Fore.CYAN}Enter schema name: ").strip()
+    elif schema_action != 'none':
+        print(f"{Fore.RED}❌ Invalid choice. Choose 'create', 'choose', or 'none'.")
+        return
 
     migrate_choice = input(f"{Fore.CYAN}🚀 Migrate all tables or a single table? (all/single): ").strip().lower()
     list_and_migrate_tables(db_tool, migrate_choice, schema)
 
-    csv_dir = input(f"{Fore.CYAN}📂 Enter directory for CSV export (press Enter to skip): ").strip()
-
-    # Export to CSV if directory provided
-    if csv_dir:
-        export_tables_to_csv(db_tool, tables, schema, csv_dir)
-    else:
-        print(f"{Fore.YELLOW}⚠️ Skipping CSV export...")
-
-    print(f"{Fore.GREEN}✅ Migration completed successfully. Goodbye! 👋")
+    print(f"{Fore.GREEN}✅ Migration completed successfully.")
 
 def process_cli_arguments():
     """Process command-line arguments."""
@@ -142,8 +140,6 @@ def process_cli_arguments():
     parser.add_argument('--psql_conn_string', type=str, help="PostgreSQL connection string.")
     parser.add_argument('--schema', type=str, help="Schema name to use for migration.")
     parser.add_argument('--tables', type=str, nargs='*', help="Comma-separated list of table names to migrate (default: all tables).")
-    parser.add_argument('--export', action='store_true', help="Export tables to CSV.")
-    parser.add_argument('--csv_dir', type=str, help="Directory to store exported CSV files.")
     parser.add_argument('--cli', action='store_true', help="Trigger the interactive shell mode.")
     
     return parser.parse_args()
@@ -193,17 +189,7 @@ def main():
         for table in tables:
             db_tool.migrate_table(table, table, schema)
 
-    if args.export:
-        if not args.csv_dir:
-            print(f"{Fore.RED}❌ Error: CSV directory is required for exporting tables.")
-            return
-
-        os.makedirs(args.csv_dir, exist_ok=True)
-        for table in tables if args.tables is None else args.tables:
-            output_file = os.path.join(args.csv_dir, f"{table}.csv")
-            db_tool.export_table_to_csv(table if not schema else f"{schema}.{table}", output_file)
-
-    print(f"{Fore.GREEN}✅ Migration and export completed successfully! 👋")
+    print(f"{Fore.GREEN}✅ Migration successfully! 👋")
 
 if __name__ == "__main__":
     main()
