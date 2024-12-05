@@ -8,6 +8,10 @@ from mamaduck.database.duckdb import DuckDBManager
 init(autoreset=True)
 
 class DuckDBToCSV(DuckDBManager):
+
+    def __init__(self, db_path):
+        super().__init__(db_path)
+
     def export_table_to_csv(self, table_name, output_file, schema=None):
         """Export DuckDB table to CSV."""
         try:
