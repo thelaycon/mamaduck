@@ -25,31 +25,6 @@ class CSVToDuckDB(DuckDBManager):
             print(f"{Fore.RED}❌ Error: {e}")
             raise
 
-    def query_table(self, table_name, schema=None):
-        """Query DuckDB table."""
-        try:
-            table = f"{schema}.{table_name}" if schema else table_name
-            print(f"{Fore.CYAN}🔍 Fetching data from '{table}'...")
-            result = self.duckdb_conn.execute(f"SELECT * FROM {table} LIMIT 10;").fetchall()
-            columns = [desc[0] for desc in self.duckdb_conn.execute(f"PRAGMA table_info('{table}');").fetchall()]
-            print(f"{Fore.GREEN}✅ Showing 10 records from '{table}':")
-            print(f"{Fore.CYAN}{columns}")
-            for row in result:
-                print(f"{Fore.YELLOW}{row}")
-        except Exception as e:
-            print(f"{Fore.RED}❌ Error: {e}")
-            raise
-
-    def export_table_to_csv(self, table_name, output_file, schema=None):
-        """Export DuckDB table to CSV."""
-        try:
-            table = f"{schema}.{table_name}" if schema else table_name
-            print(f"{Fore.CYAN}📤 Exporting '{table}' to '{output_file}'...")
-            self.duckdb_conn.execute(f"COPY {table} TO '{output_file}' WITH (HEADER, DELIMITER ',');")
-            print(f"{Fore.GREEN}✅ Table '{table}' exported to '{output_file}'.")
-        except Exception as e:
-            print(f"{Fore.RED}❌ Error: {e}")
-            raise
 
 def start_interactive_mode():
     """Interactive CSV to DuckDB tool."""
@@ -101,15 +76,6 @@ def start_interactive_mode():
     except Exception:
         return
 
-    # Query the table
-    query_action = input(f"{Fore.CYAN}📊 View table data? (yes/no): ").strip().lower()
-    if query_action == 'yes':
-        try:
-            db_tool.query_table(table_name, schema)
-        except Exception:
-            return
-
-
     print(f"{Fore.GREEN}✅ Migration completed successfully.")
 
 def process_cli_arguments(args):
@@ -133,13 +99,6 @@ def process_cli_arguments(args):
         except Exception:
             return
 
-    # Query the table if --query is set
-    if args.query:
-        try:
-            db_tool.query_table(args.table, args.schema)
-        except Exception:
-            return
-
     print(f"{Fore.GREEN}✅ Migration completed successfully.")
 
 def main():
@@ -151,7 +110,6 @@ def main():
     parser.add_argument('--csv', type=str, help="CSV file path to load into DuckDB.")
     parser.add_argument('--table', type=str, help="DuckDB table name to create.")
     parser.add_argument('--schema', type=str, help="Schema name (optional).")
-    parser.add_argument('--query', action='store_true', help="Query table after loading (limit 10 rows).")
     parser.add_argument('--cli', action='store_true', help="Trigger interactive shell mode.")
     
     args = parser.parse_args()

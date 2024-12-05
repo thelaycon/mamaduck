@@ -45,7 +45,7 @@ class PostgreSQLToDuckDB(DuckDBManager):
 
 def get_postgresql_connection_string():
     """Get individual PostgreSQL connection parameters and assemble the connection string."""
-    print(f"{Fore.CYAN}Please provide the following PostgreSQL connection details:")
+    print(f"{Fore.CYAN}🔐 Please provide the following PostgreSQL connection details:")
     dbname = input(f"{Fore.YELLOW}Enter the PostgreSQL database name (e.g., 'postgres'): ").strip()
     user = input(f"{Fore.YELLOW}Enter the PostgreSQL user (e.g., 'postgres'): ").strip()
     host = input(f"{Fore.YELLOW}Enter the PostgreSQL host (e.g., '127.0.0.1'): ").strip()

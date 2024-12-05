@@ -57,24 +57,6 @@ class DuckDBToPostgreSQL(DuckDBManager):
             print(f"{Fore.RED}❌ Failed to transfer data: {e}")
             raise
 
-    def preview_psql_data(self, psql_table_name, num_records=10):
-        """Preview data from the PostgreSQL table."""
-        try:
-            preview_query = f"SELECT * FROM postgres_db.{psql_table_name} LIMIT {num_records};"
-            result = self.duckdb_conn.execute(preview_query).fetchall()
-            print(f"{Fore.CYAN}👀 Previewing {num_records} records from PostgreSQL table '{psql_table_name}':")
-            for row in result:
-                print(f"{Fore.YELLOW}{row}")
-        except Exception as e:
-            print(f"{Fore.RED}❌ Failed to preview data in PostgreSQL: {e}")
-            raise
-
-    def close_connections(self):
-        """Close the DuckDB connection."""
-        if self.duckdb_conn:
-            self.duckdb_conn.close()
-            print(f"{Fore.GREEN}✅ Connection to DuckDB closed.")
-
 def get_postgresql_connection_string():
     """Get individual PostgreSQL connection parameters and assemble the connection string."""
     print(f"{Fore.CYAN}🔐 Please provide the following PostgreSQL connection details:")
@@ -86,23 +68,20 @@ def get_postgresql_connection_string():
     return f"dbname={dbname} user={user} host={host} port={port} password={password}"
 
 def interactive_mode():
-    print(f"{Fore.CYAN}🎮 Running in interactive mode...")
+    print(f"{Fore.CYAN}👋 MamaDuck")
 
-    # Interactive mode: Get user input for database type
-    db_choice = input(f"{Fore.CYAN}📂 Do you want to use a file-based DuckDB or an in-memory database? (file/memory): ").strip().lower()
-
-    # Validate the choice
-    if db_choice not in ['file', 'memory']:
-        print(f"{Fore.RED}❌ Invalid choice. Please enter 'file' or 'memory'.")
+    # Choose database type (in-memory or file)
+    db_choice = input(f"{Fore.CYAN}💡 Use in-memory or persistent file DB? (memory/file): ").strip().lower()
+    if db_choice == 'file':
+        db_path = input(f"{Fore.CYAN}🔑 Enter DuckDB file name (existing/new): ").strip()
+    elif db_choice == 'memory':
+        db_path = None
+    else:
+        print(f"{Fore.RED}❌ Invalid choice. Choose 'memory' or 'file'.")
         return
 
-    if db_choice == 'file':
-        duckdb_db_name = input(f"{Fore.CYAN}📂 Enter the DuckDB database name (located in 'databases' folder): ").strip()
-    else:
-        duckdb_db_name = ":memory:"
-
     psql_conn_string = get_postgresql_connection_string()
-    db_tool = DuckDBToPostgreSQL(duckdb_db_name, psql_conn_string)
+    db_tool = DuckDBToPostgreSQL(db_path, psql_conn_string)
     
     db_tool.connect_to_duckdb()
     db_tool.attach_postgresql()
@@ -112,21 +91,18 @@ def interactive_mode():
     column_definitions = db_tool.get_table_columns(source_table_name)
     db_tool.create_table_in_psql(psql_table_name, column_definitions)
     db_tool.transfer_data_to_psql(source_table_name, psql_table_name)
-
-    if input(f"{Fore.CYAN}👀 Preview PostgreSQL table data? (yes/no): ").strip().lower() == "yes":
-        db_tool.preview_psql_data(psql_table_name)
     
-    db_tool.close_connections()
+    db_tool.close_duckdb_conn()
+    print(f"{Fore.GREEN}✅ Export completed.")
 
 def main():
     parser = argparse.ArgumentParser(description="DuckDB to PostgreSQL Transfer Tool")
     parser.add_argument("--cli", action="store_true", help="Trigger interactive mode")
-    parser.add_argument("--db", help="Path to the DuckDB database file (use ':memory:' for an in-memory database)")
+    parser.add_argument("--db", help="Path to DuckDB DB file (leave blank for in-memory).")
     parser.add_argument("--psql", help="PostgreSQL connection string")
     parser.add_argument("--table", help="Name of the source table in DuckDB")
     parser.add_argument("--output", help="Name of the target table in PostgreSQL")
-    parser.add_argument("--preview", action="store_true", help="Preview data in PostgreSQL after transfer")
-    parser.add_argument("--records", type=int, default=10, help="Number of records to preview if --preview is set (default: 10)")
+
     args = parser.parse_args()
 
     if args.cli:
@@ -140,13 +116,11 @@ def main():
         return
 
     # Non-interactive mode
-    print(f"{Fore.CYAN}🚀 Running in non-interactive mode...")
-
     # Handle in-memory DuckDB
-    duckdb_db_path = ":memory:" if args.db == ":memory:" else os.path.join(DuckDBToPostgreSQL.DATABASE_FOLDER, args.db)
+    db_path = args.db
 
     # Initialize the database tool
-    db_tool = DuckDBToPostgreSQL(duckdb_db_path, args.psql)
+    db_tool = DuckDBToPostgreSQL(db_path, args.psql)
 
     try:
         db_tool.connect_to_duckdb()
@@ -157,12 +131,12 @@ def main():
         db_tool.create_table_in_psql(args.output, column_definitions)
         db_tool.transfer_data_to_psql(args.table, args.output)
 
-        if args.preview:
-            db_tool.preview_psql_data(args.output, args.records)
     except Exception as e:
         print(f"{Fore.RED}❌ An error occurred: {e}")
     finally:
-        db_tool.close_connections()
+        db_tool.close_duckdb_conn()
+    
+    print(f"{Fore.GREEN}✅ Export completed.")
 
 if __name__ == "__main__":
     main()

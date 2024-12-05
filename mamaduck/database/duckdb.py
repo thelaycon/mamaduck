@@ -26,13 +26,19 @@ class DuckDBManager:
             if self.duckdb_path:
                 full_path = os.path.join(self.DATABASE_FOLDER, self.duckdb_path)
                 self.duckdb_conn = duckdb.connect(database=full_path)
-                print(f"{Fore.GREEN}Created DuckDB database file '{full_path}'.")
+                print(f"{Fore.GREEN}Connected to DuckDB database file '{full_path}'.")
             else:
                 self.duckdb_conn = duckdb.connect(database=':memory:')
                 print(f"{Fore.GREEN}Created an in-memory DuckDB database.")
         except Exception as e:
             print(f"{Fore.RED}Failed to create DuckDB database: {e}")
             raise
+
+    def close_duckdb_conn(self):
+        """Close DuckDB connection."""
+        if self.duckdb_conn:
+            self.duckdb_conn.close()
+            print(f"{Fore.GREEN}✅ DuckDB connection closed.")
 
     @staticmethod
     def list_databases():
@@ -63,6 +69,8 @@ class DuckDBManager:
         except Exception as e:
             print(f"{Fore.RED}❌ Error: {e}")
             raise
+
+    
 
 def main():
     print(f"{Fore.CYAN}Welcome to the DuckDB Manager Tool!")
