@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "mamaduck"
-version = "0.1.0"
-description = "A local data warehouse utility for managing and migrating data across DuckDB, SQLite, and CSV."
+version = "1.0.0"
+description = "A local data warehouse utility for managing and migrating data across DuckDB, Postgresql, SQLite, and CSV."
 authors = ["balogun <tobitobitobiwhy@gmail.com>"]
 license = "MIT"
 homepage = "https://github.com/thelaycon/mamaduck"
 repository = "https://github.com/thelaycon/mamaduck"
 readme = "README.md"
-keywords = ["data warehouse", "ETL", "DuckDB", "SQLite", "CSV", "data management"]
+keywords = ["data warehouse", "ETL", "DuckDB", "SQLite", "CSV", "Postgresql"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

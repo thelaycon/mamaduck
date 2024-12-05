@@ -77,7 +77,7 @@ mamaduck --kwak load_psql --psql_conn_string <PSQL_CONNECTION_STRING> --db <DUCK
 Arguments:
 - `--db`: Path to DuckDB DB file (leave blank for in-memory).
 - `--psql_conn_string`: PostgreSQL connection string.
-- `--schema`: Schema name to use for migration.
+- `--schema`: Schema name to use for migration (optional).
 - `--tables`: Comma-separated list of table names to migrate (default: all tables).
 - `--cli`: Launch interactive shell mode.
 
@@ -92,7 +92,7 @@ mamaduck --kwak load_sqlite --sqlite <SQLITE_DB_PATH> --db <DUCKDB_DB_PATH> --ta
 Arguments:
 - `--db`: Path to DuckDB DB file (leave blank for in-memory).
 - `--sqlite`: Path to the SQLite database file.
-- `--schema`: Schema name to use for migration.
+- `--schema`: Schema name to use for migration (optional).
 - `--tables`: Comma-separated list of table names to migrate (default: all tables).
 - `--cli`: Launch interactive shell mode.
 
