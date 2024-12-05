@@ -53,17 +53,6 @@ class DuckDBToSQLite(DuckDBManager):
             print(f"{Fore.RED}❌ Data transfer failed: {e}")
             raise
 
-    def preview_sqlite_data(self, sqlite_table_name, num_records=10):
-        """Preview data from SQLite table."""
-        try:
-            result = self.duckdb_conn.execute(f"SELECT * FROM sqlite_db.{sqlite_table_name} LIMIT {num_records};").fetchall()
-            print(f"{Fore.CYAN}🔍 Previewing {num_records} records from '{sqlite_table_name}':")
-            for row in result:
-                print(f"{Fore.YELLOW}{row}")
-        except Exception as e:
-            print(f"{Fore.RED}❌ Failed to preview data: {e}")
-            raise
-
 def interactive_mode():
     """Interactive mode to transfer data from DuckDB to SQLite."""
     print(f"{Fore.CYAN}👋 MamaDuck")
@@ -101,8 +90,6 @@ def main():
     parser.add_argument("--sqlite", help="SQLite database path.")
     parser.add_argument("--table", help="Source table in DuckDB.")
     parser.add_argument("--newtable", help="New table in SQLite.")
-    parser.add_argument("--preview", action="store_true", help="Preview data in SQLite after transfer.")
-    parser.add_argument("--records", type=int, default=10, help="Number of records to preview (default: 10).")
     args = parser.parse_args()
 
     if args.cli:

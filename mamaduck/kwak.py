@@ -29,48 +29,48 @@ U|' \/ '|u U  /"\  u  U|' \/ '|u U  /"\  u   |  _"\   U |"|u| | U /"___|   |"|/ 
     
     # Add the option to choose the tool to run
     parser.add_argument(
-        '--tool', 
+        '--kwak', 
         type=str, 
-        choices=['csv', 'psql', 'sqlite', 'to_csv', 'to_psql', 'to_sqlite'], 
+        choices=['load_csv', 'load_psql', 'load_sqlite', 'to_csv', 'to_psql', 'to_sqlite'], 
         required=True,
-        help="Choose the migration tool: 'csv', 'psql', 'sqlite', 'to_csv', 'to_psql', or 'to_sqlite'."
+        help="Choose the migration tool: 'load_csv', 'load_psql', 'load_sqlite', 'to_csv', 'to_psql', or 'to_sqlite'."
     )
     
     # Parse the command-line arguments
     args, unknown_args = parser.parse_known_args()
 
     # Routing to the appropriate CLI tool with the remaining arguments
-    if args.tool == 'csv':
+    if args.kwak == 'load_csv':
         # Forward the unknown arguments to the CSV tool
         print("Launching CSV Migration Tool...")
         sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
         csv_main()
 
-    elif args.tool == 'psql':
+    elif args.kwak == 'load_psql':
         # Forward the unknown arguments to the PostgreSQL tool
         print("Launching PostgreSQL Migration Tool...")
         sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
         psql_main()
 
-    elif args.tool == 'sqlite':
+    elif args.kwak == 'load_sqlite':
         # Forward the unknown arguments to the SQLite tool
         print("Launching SQLite Migration Tool...")
         sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
         sqlite_main()
 
-    elif args.tool == 'to_csv':
+    elif args.kwak == 'to_csv':
         # Forward the unknown arguments to the CSV Sink tool
         print("Launching CSV Sink Tool...")
         sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
         to_csv_main()
 
-    elif args.tool == 'to_psql':
+    elif args.kwak == 'to_psql':
         # Forward the unknown arguments to the PostgreSQL Sink tool
         print("Launching PostgreSQL Sink Tool...")
         sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
         to_psql_main()
 
-    elif args.tool == 'to_sqlite':
+    elif args.kwak == 'to_sqlite':
         # Forward the unknown arguments to the SQLite Sink tool
         print("Launching SQLite Sink Tool...")
         sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
