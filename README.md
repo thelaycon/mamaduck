@@ -3,7 +3,7 @@
 **MamaDuck** is a command-line tool designed to facilitate the migration and synchronization of data between DuckDB and other databases like PostgreSQL, SQLite, and CSV. It provides an efficient way to load, export, and transfer data.
 
 ---
-![Duck Logo](demo.svg)
+![Demo](demo.svg)
 ---
 ## Installation
 
