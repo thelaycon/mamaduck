@@ -8,10 +8,14 @@ from mamaduck.sink.to_csv import main as to_csv_main
 from mamaduck.sink.to_psql import main as to_psql_main
 from mamaduck.sink.to_sqlite import main as to_sqlite_main
 
+from colorama import init, Fore
+
+init(autoreset=True)
+
 def main():
     """Main entry point that routes to the appropriate tool based on user input."""
 
-    print("""
+    print(Fore.YELLOW + """
   __  __       _        __  __       _        ____       _   _     ____     _  __    
 U|' \/ '|u U  /"\  u  U|' \/ '|u U  /"\  u   |  _"\   U |"|u| | U /"___|   |"|/ /    
 \| |\/| |/  \/ _ \/   \| |\/| |/  \/ _ \/   /| | | |   \| |\| | \| | u     | ' /     
