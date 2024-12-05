@@ -55,7 +55,7 @@ class DuckDBToSQLite(DuckDBManager):
 
 def interactive_mode():
     """Interactive mode to transfer data from DuckDB to SQLite."""
-    print(f"{Fore.CYAN}👋 MamaDuck")
+    print(f"{Fore.CYAN}🦆 MamaDuck")
 
     # Choose database type (in-memory or file)
     db_choice = input(f"{Fore.CYAN}💡 Use in-memory or persistent file DB? (memory/file): ").strip().lower()
