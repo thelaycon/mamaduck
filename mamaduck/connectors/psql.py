@@ -81,7 +81,7 @@ def list_and_migrate_tables(db_tool, migrate_choice, schema):
     """List PostgreSQL tables and migrate them."""
     try:
         tables = db_tool.list_postgresql_tables()
-        print(f"{Fore.GREEN}Tables in PostgreSQL database: {', '.join(tables) if tables else 'No tables found.'}")
+        print(f"{Fore.GREEN}✅ Tables in PostgreSQL database: {', '.join(tables) if tables else 'No tables found.'}")
     except Exception:
         return
 
@@ -154,10 +154,6 @@ def main():
     # Validate required arguments for non-interactive mode
     if not args.db or not args.psql_conn_string or not args.tables:
         print(f"{Fore.RED}❌ Error: '--db', '--psql_conn_string', and '--tables' arguments are required.")
-        return
-
-    if not args.psql_conn_string:
-        print(f"{Fore.RED}❌ Error: PostgreSQL connection string is required.")
         return
 
     psql_conn_string = args.psql_conn_string

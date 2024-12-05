@@ -45,15 +45,6 @@ class SQLiteToDuckDB(DuckDBManager):
             print(f"{Fore.RED}Failed to migrate table: {e}")
             raise
 
-    def export_table_to_csv(self, table_name, output_file):
-        """Export the contents of a DuckDB table to a CSV file."""
-        try:
-            self.duckdb_conn.execute(f"COPY {table_name} TO '{output_file}' WITH (HEADER, DELIMITER ',');")
-            print(f"{Fore.GREEN}Table '{table_name}' successfully exported to '{output_file}'.")
-        except Exception as e:
-            print(f"{Fore.RED}Failed to export table to CSV: {e}")
-            raise
-
 def start_interactive_mode():
     """Function to handle interactive shell mode."""
     print(f"{Fore.CYAN}👋 MamaDuck")
@@ -83,7 +74,7 @@ def start_interactive_mode():
     # List SQLite tables
     try:
         tables = db_tool.list_sqlite_tables(sqlite_path)
-        print(f"{Fore.GREEN}Tables in SQLite database: {', '.join(tables) if tables else 'No tables found.'}")
+        print(f"{Fore.GREEN}✅ Tables in SQLite database: {', '.join(tables) if tables else 'No tables found.'}")
     except Exception:
         return
 
@@ -154,18 +145,6 @@ def process_cli_arguments(args):
         for table in tables:
             db_tool.migrate_table(sqlite_path, table, table, schema)
 
-    # Export tables to CSV
-    if args.export:
-        if not args.csv_dir:
-            print(f"{Fore.RED}❌ Error: CSV directory is required for exporting tables.")
-            return
-
-        os.makedirs(args.csv_dir, exist_ok=True)
-
-        for table in tables if args.tables is None else args.tables:
-            output_file = os.path.join(args.csv_dir, f"{table}.csv")
-            db_tool.export_table_to_csv(table if not schema else f"{schema}.{table}", output_file)
-
     print(f"{Fore.GREEN}✅ Migration completed successfully.")
 
 def main():
@@ -175,8 +154,6 @@ def main():
     parser.add_argument('--sqlite', type=str, help="Path to the SQLite database file.")
     parser.add_argument('--schema', type=str, help="Schema name to use for migration.")
     parser.add_argument('--tables', type=str, nargs='*', help="Comma-separated list of table names to migrate (default: all tables).")
-    parser.add_argument('--export', action='store_true', help="Export tables to CSV.")
-    parser.add_argument('--csv_dir', type=str, help="Directory to store exported CSV files.")
     parser.add_argument('--cli', action='store_true', help="Trigger the interactive shell mode.")
     
     args = parser.parse_args()
@@ -190,7 +167,7 @@ def main():
         print(f"{Fore.RED}❌ Error: --db, --sqlite, and --tables are required.")
         return
 
-    process_cli_arguments()
+    process_cli_arguments(args)
 
 if __name__ == "__main__":
     main()
