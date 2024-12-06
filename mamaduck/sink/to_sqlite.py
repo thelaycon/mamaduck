@@ -13,11 +13,14 @@ class DuckDBToSQLite(DuckDBManager):
     def __init__(self, db_path, sqlite_db_path):
         super().__init__(db_path)
         self.sqlite_db_path = sqlite_db_path
+        self.schema = None
 
     def attach_sqlite_database(self):
         """Attach SQLite database."""
+        self.schema = self.sqlite_db_path.replace('.', '_') # Implement to handle better cases
+
         try:
-            self.duckdb_conn.execute(f"ATTACH '{self.sqlite_db_path}' AS sqlite_db (TYPE SQLITE);")
+            self.duckdb_conn.execute(f"ATTACH '{self.sqlite_db_path}' AS {self.schema} (TYPE SQLITE);")
             print(f"{Fore.GREEN}✅ Attached SQLite database '{self.sqlite_db_path}'.")
         except Exception as e:
             print(f"{Fore.RED}❌ Failed to attach SQLite: {e}")
@@ -35,9 +38,9 @@ class DuckDBToSQLite(DuckDBManager):
     def create_table_in_sqlite(self, table_name, column_definitions):
         """Create table in SQLite."""
         try:
-            create_query = f"CREATE TABLE IF NOT EXISTS sqlite_db.{table_name} ({', '.join(column_definitions)});"
+            create_query = f"CREATE TABLE IF NOT EXISTS {self.schema}.{table_name} ({', '.join(column_definitions)});"
             self.duckdb_conn.execute(create_query)
-            print(f"{Fore.GREEN}✅ Table '{table_name}' created in SQLite.")
+            print(f"{Fore.GREEN}✅ Table '{table_name}' created in SQLite with schema {self.schema}.")
         except Exception as e:
             print(f"{Fore.RED}❌ Table creation failed: {e}")
             raise
@@ -46,9 +49,9 @@ class DuckDBToSQLite(DuckDBManager):
         """Transfer data from DuckDB to SQLite."""
         try:
             data = self.duckdb_conn.execute(f"SELECT * FROM {source_table_name}").fetchall()
-            insert_query = f"INSERT INTO sqlite_db.{sqlite_table_name} VALUES ({', '.join(['?' for _ in data[0]])})"
+            insert_query = f"INSERT INTO {self.schema}.{sqlite_table_name} VALUES ({', '.join(['?' for _ in data[0]])})"
             self.duckdb_conn.executemany(insert_query, data)
-            print(f"{Fore.GREEN}✅ Data transferred from '{source_table_name}' to SQLite '{sqlite_table_name}'.")
+            print(f"{Fore.GREEN}✅ Data transferred from '{source_table_name}' to SQLite '{self.schema}.{sqlite_table_name}'.")
         except Exception as e:
             print(f"{Fore.RED}❌ Data transfer failed: {e}")
             raise
@@ -72,7 +75,6 @@ def interactive_mode():
     sqlite_table_name = input(f"{Fore.CYAN}Enter new SQLite table name: ").strip()
 
     db_tool = DuckDBToSQLite(db_path, sqlite_db_path)
-    db_tool.connect_to_duckdb()
     db_tool.attach_sqlite_database()
 
     column_definitions = db_tool.get_table_columns(source_table_name)

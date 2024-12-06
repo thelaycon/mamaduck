@@ -68,7 +68,7 @@ def get_postgresql_connection_string():
     return f"dbname={dbname} user={user} host={host} port={port} password={password}"
 
 def interactive_mode():
-    print(f"{Fore.CYAN}👋 MamaDuck")
+    print(f"{Fore.CYAN}🦆 MamaDuck")
 
     # Choose database type (in-memory or file)
     db_choice = input(f"{Fore.CYAN}💡 Use in-memory or persistent file DB? (memory/file): ").strip().lower()

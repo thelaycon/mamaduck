@@ -101,7 +101,7 @@ def list_and_migrate_tables(db_tool, migrate_choice, schema):
 
 def start_interactive_mode():
     """Interactive mode for PostgreSQL to DuckDB migration."""
-    print(f"{Fore.CYAN}👋 MamaDuck")
+    print(f"{Fore.CYAN}🦆 MamaDuck")
 
     psql_conn_string = get_postgresql_connection_string()
     db_tool = initialize_duckdb_and_attach_postgresql(psql_conn_string)
@@ -185,7 +185,7 @@ def main():
         for table in tables:
             db_tool.migrate_table(table, table, schema)
 
-    print(f"{Fore.GREEN}✅ Migration successfully! 👋")
+    print(f"{Fore.GREEN}✅ Migration successfully! 🦆")
 
 if __name__ == "__main__":
     main()

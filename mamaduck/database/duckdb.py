@@ -34,6 +34,30 @@ class DuckDBManager:
             print(f"{Fore.RED}Failed to create DuckDB database: {e}")
             raise
 
+    def get_schema_list(self):
+        schemas = self.duckdb_conn.execute("SELECT schema_name FROM information_schema.schemata;").fetchall()
+        schemas = set([s[0] for s in schemas])
+        return list(schemas)
+    
+
+    def get_table_list(self, schema=None):
+        """Get the list of tables in the specified schema or all schemas."""
+        try:
+            query = "SELECT table_schema, table_name FROM information_schema.tables"
+            if schema:
+                query += f" WHERE table_schema = '{schema}'"
+            query += ";"
+
+            tables = self.duckdb_conn.execute(query).fetchall()
+            table_list = [f"{row[0]}.{row[1]}" if schema is None else row[1] for row in tables]
+            
+            print(f"{Fore.GREEN}✅ Found {len(table_list)} tables in schema '{schema or 'all'}'.")
+            return table_list
+        except Exception as e:
+            print(f"{Fore.RED}❌ Error fetching tables: {e}")
+            raise
+
+
     def close_duckdb_conn(self):
         """Close DuckDB connection."""
         if self.duckdb_conn:
