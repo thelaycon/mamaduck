@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mamaduck"
-version = "1.0.1"
+version = "1.0.2"
 description = "A local data warehouse utility for managing and migrating data across DuckDB, Postgresql, SQLite, and CSV."
 authors = ["balogun <tobitobitobiwhy@gmail.com>"]
 license = "MIT"
