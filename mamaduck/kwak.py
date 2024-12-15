@@ -9,12 +9,24 @@ from mamaduck.sink.to_psql import main as to_psql_main
 from mamaduck.sink.to_sqlite import main as to_sqlite_main
 
 from colorama import init, Fore
+import logging
 
 init(autoreset=True)
 
+class CustomArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        """Override the default error method to provide a user-friendly message."""
+        self.print_help()
+        print(f"\n{Fore.RED}Error: {message}\n")
+        print(f"{Fore.YELLOW}Hint: Use one of the valid subcommands: "
+              f"'load_csv', 'load_psql', 'load_sqlite', 'to_csv', 'to_psql', 'to_sqlite'.")
+        sys.exit(2)
+
 def main():
     """Main entry point that routes to the appropriate tool based on user input."""
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
+    # Display welcome banner
     print(Fore.YELLOW + """
   __  __       _        __  __       _        ____       _   _     ____     _  __    
 U|' \/ '|u U  /"\  u  U|' \/ '|u U  /"\  u   |  _"\   U |"|u| | U /"___|   |"|/ /    
@@ -23,58 +35,36 @@ U|' \/ '|u U  /"\  u  U|' \/ '|u U  /"\  u   |  _"\   U |"|u| | U /"___|   |"|/ 
  |_|  |_|  /_/   \_\   |_|  |_|  /_/   \_\   |____/ u  <<\___/    \____|   |_|\_\    
 <<,-,,-.    \\    >>  <<,-,,-.    \\    >>    |||_    (__) )(    _// \\  ,-,>> \\,-. 
  (./  \.)  (__)  (__)  (./  \.)  (__)  (__)  (__)_)       (__)  (__)(__)  \.)   (_/  
-
     """)
-    parser = argparse.ArgumentParser(description="MamaDuck CLI Tool Launcher")
-    
-    # Add the option to choose the tool to run
+
+    # Use the custom argument parser
+    parser = CustomArgumentParser(description="MamaDuck CLI Tool Launcher")
     parser.add_argument(
-        '--kwak', 
+        'kwak', 
         type=str, 
         choices=['load_csv', 'load_psql', 'load_sqlite', 'to_csv', 'to_psql', 'to_sqlite'], 
-        required=True,
         help="Choose the migration tool: 'load_csv', 'load_psql', 'load_sqlite', 'to_csv', 'to_psql', or 'to_sqlite'."
     )
     
-    # Parse the command-line arguments
     args, unknown_args = parser.parse_known_args()
 
-    # Routing to the appropriate CLI tool with the remaining arguments
-    if args.kwak == 'load_csv':
-        # Forward the unknown arguments to the CSV tool
-        print("Launching CSV Migration Tool...")
-        sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
-        csv_main()
+    # Map tool choices to corresponding functions
+    tool_mapping = {
+        'load_csv': csv_main,
+        'load_psql': psql_main,
+        'load_sqlite': sqlite_main,
+        'to_csv': to_csv_main,
+        'to_psql': to_psql_main,
+        'to_sqlite': to_sqlite_main,
+    }
 
-    elif args.kwak == 'load_psql':
-        # Forward the unknown arguments to the PostgreSQL tool
-        print("Launching PostgreSQL Migration Tool...")
-        sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
-        psql_main()
-
-    elif args.kwak == 'load_sqlite':
-        # Forward the unknown arguments to the SQLite tool
-        print("Launching SQLite Migration Tool...")
-        sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
-        sqlite_main()
-
-    elif args.kwak == 'to_csv':
-        # Forward the unknown arguments to the CSV Sink tool
-        print("Launching CSV Sink Tool...")
-        sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
-        to_csv_main()
-
-    elif args.kwak == 'to_psql':
-        # Forward the unknown arguments to the PostgreSQL Sink tool
-        print("Launching PostgreSQL Sink Tool...")
-        sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
-        to_psql_main()
-
-    elif args.kwak == 'to_sqlite':
-        # Forward the unknown arguments to the SQLite Sink tool
-        print("Launching SQLite Sink Tool...")
-        sys.argv = [sys.argv[0], *unknown_args]  # Adjust sys.argv to pass the arguments
-        to_sqlite_main()
+    try:
+        logging.info(f"Launching {args.kwak.replace('_', ' ').title()} Tool...")
+        sys.argv = [sys.argv[0], *unknown_args]
+        tool_mapping[args.kwak]()
+    except Exception as e:
+        logging.error(f"An error occurred while executing the tool: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
