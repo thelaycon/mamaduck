@@ -93,38 +93,3 @@ class DuckDBManager:
         except Exception as e:
             print(f"{Fore.RED}❌ Error: {e}")
             raise
-
-    
-
-def main():
-    print(f"{Fore.CYAN}Welcome to the DuckDB Manager Tool!")
-
-    # Offer to list existing databases
-    print(f"{Fore.CYAN}Would you like to list existing DuckDB files in the '{DuckDBManager.DATABASE_FOLDER}' folder? (yes/no): ", end="")
-    list_choice = input().strip().lower()
-    if list_choice == 'yes':
-        DuckDBManager.list_databases()
-
-    # DuckDB: Choose memory or file-based
-    print(f"{Fore.CYAN}Would you like to create an in-memory DuckDB database or a persistent file? (memory/file): ", end="")
-    duckdb_choice = input().strip().lower()
-    if duckdb_choice == 'file':
-        print(f"{Fore.CYAN}Enter the DuckDB file name (existing or new, without path): ", end="")
-        duckdb_path = input().strip()
-    elif duckdb_choice == 'memory':
-        duckdb_path = None
-    else:
-        print(f"{Fore.RED}Invalid choice. Please choose 'memory' or 'file'.")
-        return
-
-    # Initialize DuckDB connection
-    db_tool = DuckDBManager(duckdb_path)
-    try:
-        db_tool.connect_to_duckdb()
-    except Exception:
-        return
-
-    print(f"{Fore.GREEN}DuckDB database setup complete. Goodbye!")
-
-if __name__ == "__main__":
-    main()

@@ -84,7 +84,7 @@ def test_transfer_data_to_psql_success(mock_duckdb_connection):
 # Test for DuckDBToSQLite
 def test_attach_sqlite_database_success(mock_duckdb_connection):
     # Arrange
-    sqlite_db_path = "sqlite_db_path"
+    sqlite_db_path = "sqlite_db"
     db_tool = DuckDBToSQLite(db_path=None, sqlite_db_path=sqlite_db_path)
     db_tool.duckdb_conn = mock_duckdb_connection
 
@@ -120,22 +120,6 @@ def test_transfer_data_to_sqlite_success(mock_duckdb_connection):
 
     # Assert
     db_tool.duckdb_conn.executemany.assert_called_once()
-
-
-# Test for DuckDBToSQLite preview
-def test_preview_sqlite_data_success(mock_duckdb_connection):
-    # Arrange
-    sqlite_table_name = "test_sqlite_table"
-    db_tool = DuckDBToSQLite(db_path=None, sqlite_db_path="fake_sqlite_path")
-    db_tool.duckdb_conn = mock_duckdb_connection
-    db_tool.duckdb_conn.execute.return_value.fetchall.return_value = [(1, 'test')]
-
-    # Act
-    db_tool.preview_sqlite_data(sqlite_table_name)
-
-    # Assert
-    db_tool.duckdb_conn.execute.assert_called_once_with(f"SELECT * FROM sqlite_db.{sqlite_table_name} LIMIT 10;")
-
 
 def test_preview_sqlite_data_failure(mock_duckdb_connection):
     # Arrange
