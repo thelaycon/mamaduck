@@ -4,6 +4,8 @@
 
 ---
 ![Demo](demo.svg)
+
+**Update:** The command is `kwak` instead of `--kwak`.
 ---
 ## Installation
 
@@ -24,7 +26,7 @@ This command will install the latest version of the tool and its dependencies.
 For example, to run the `load_csv` command in interactive mode, use:
 
 ```bash
-mamaduck --kwak load_csv --cli
+mamaduck kwak load_csv --cli
 ```
 
 In interactive mode, you can interact with the database and execute migration tasks more interactively.
@@ -36,7 +38,7 @@ In interactive mode, you can interact with the database and execute migration ta
 **MamaDuck** follows this general syntax:
 
 ```bash
-mamaduck --kwak <tool> [options]
+mamaduck kwak <tool> [options]
 ```
 
 Where `<tool>` is one of the following migration tools:
@@ -57,7 +59,7 @@ Each command (tool) has its own set of arguments. Below are the arguments for ea
 ### 1. `load_csv`: Load Data from CSV into DuckDB
 
 ```bash
-mamaduck --kwak load_csv --csv <CSV_FILE_PATH> --db <DUCKDB_DB_PATH> --table <TABLE_NAME>
+mamaduck kwak load_csv --csv <CSV_FILE_PATH> --db <DUCKDB_DB_PATH> --table <TABLE_NAME>
 ```
 
 Arguments:
@@ -72,7 +74,7 @@ Arguments:
 ### 2. `load_psql`: Load Data from PostgreSQL into DuckDB
 
 ```bash
-mamaduck --kwak load_psql --psql_conn_string <PSQL_CONNECTION_STRING> --db <DUCKDB_DB_PATH> --schema <SCHEMA_NAME>
+mamaduck kwak load_psql --psql_conn_string <PSQL_CONNECTION_STRING> --db <DUCKDB_DB_PATH> --schema <SCHEMA_NAME>
 ```
 
 Arguments:
@@ -87,7 +89,7 @@ Arguments:
 ### 3. `load_sqlite`: Load Data from SQLite into DuckDB
 
 ```bash
-mamaduck --kwak load_sqlite --sqlite <SQLITE_DB_PATH> --db <DUCKDB_DB_PATH> --tables <TABLE_NAMES>
+mamaduck kwak load_sqlite --sqlite <SQLITE_DB_PATH> --db <DUCKDB_DB_PATH> --tables <TABLE_NAMES>
 ```
 
 Arguments:
@@ -102,7 +104,7 @@ Arguments:
 ### 4. `to_csv`: Export Data from DuckDB to CSV
 
 ```bash
-mamaduck --kwak to_csv --db <DUCKDB_DB_PATH> --table <TABLE_NAME> --output <CSV_FILE_PATH>
+mamaduck kwak to_csv --db <DUCKDB_DB_PATH> --table <TABLE_NAME> --output <CSV_FILE_PATH>
 ```
 
 Arguments:
@@ -117,7 +119,7 @@ Arguments:
 ### 5. `to_psql`: Transfer Data from DuckDB to PostgreSQL
 
 ```bash
-mamaduck --kwak to_psql --db <DUCKDB_DB_PATH> --psql <PSQL_CONNECTION_STRING> --table <TABLE_NAME>
+mamaduck kwak to_psql --db <DUCKDB_DB_PATH> --psql <PSQL_CONNECTION_STRING> --table <TABLE_NAME>
 ```
 
 Arguments:
@@ -132,7 +134,7 @@ Arguments:
 ### 6. `to_sqlite`: Transfer Data from DuckDB to SQLite
 
 ```bash
-mamaduck --kwak to_sqlite --db <DUCKDB_DB_PATH> --sqlite <SQLITE_DB_PATH> --table <TABLE_NAME> --newtable <NEW_TABLE_NAME>
+mamaduck kwak to_sqlite --db <DUCKDB_DB_PATH> --sqlite <SQLITE_DB_PATH> --table <TABLE_NAME> --newtable <NEW_TABLE_NAME>
 ```
 
 Arguments:
